@@ -24,11 +24,12 @@
         }
 
         header {
-            padding: 40px 20px 20px 20px;
+            padding: 40px 20px 30px 20px;
             background: linear-gradient(180deg, #161b22 0%, #0d1117 100%);
             border-bottom: 1px solid #30363d;
         }
 
+        /* Standart logo görünümü - Hiçbir ipucu içermez */
         #site-logo {
             font-size: 3.5rem;
             font-weight: 900;
@@ -45,15 +46,7 @@
         }
 
         #site-logo:active {
-            transform: scale(0.92);
-        }
-
-        .click-counter {
-            margin-top: 10px;
-            font-size: 0.95rem;
-            color: #8b949e;
-            font-weight: 600;
-            min-height: 24px;
+            transform: scale(0.95);
         }
 
         main {
@@ -134,13 +127,13 @@
 <body>
 
     <header>
+        <!-- Logo sade duruyor, dışarıdan hiçbir şey belli etmiyor -->
         <h1 id="site-logo">MSM-GAMES</h1>
-        <div class="click-counter" id="counter-text">Sürprizi açmak için logoya tıkla!</div>
     </header>
 
     <main>
         <div id="game-list" class="game-container">
-            <p>GitHub deposundan oyunlar taranıyor...</p>
+            <p>Oyunlar yükleniyor...</p>
         </div>
     </main>
 
@@ -149,36 +142,24 @@
     </footer>
 
     <script>
-        // 1. LOGO & EASTER EGG MANTIĞI (50 Tık - Görselsiz)
+        // 1. TAMAMEN GİZLİ EASTER EGG MANTIĞI (50 Tık)
         let clickCount = 0;
         const targetClicks = 50;
         const logo = document.getElementById("site-logo");
-        const counterText = document.getElementById("counter-text");
-        
         const easterEggFile = "games/e-s/gizli-oyun.html"; 
 
         logo.addEventListener("click", () => {
             clickCount++;
-            const kalan = targetClicks - clickCount;
-
-            if (clickCount < targetClicks) {
-                counterText.textContent = `Gizli Easter Egg'e son ${kalan} tık!`;
-                if (kalan <= 10) {
-                    counterText.style.color = "#f85149";
-                }
-            } else {
-                counterText.textContent = "🎉 Tebrikler! E-S Easter Egg Açılıyor...";
-                setTimeout(() => {
-                    window.location.href = easterEggFile;
-                }, 200);
+            
+            // 50 tıka ulaşıldığında sessizce yönlendirir
+            if (clickCount >= targetClicks) {
+                window.location.href = easterEggFile;
             }
         });
 
-        // 2. GİTHUB API İLE GÜNCEL DOSYA TARAMA MANTIĞI
+        // 2. GİTHUB API İLE OTOMATİK OYUN VE PNG TARAMA
         async function githubOyunlariniTara() {
             const gameListContainer = document.getElementById("game-list");
-            
-            // Senin GitHub deponun API adresi
             const apiUrl = "https://api.github.com/repos/blatzz92/MSM-GAMES/contents/games";
 
             try {
@@ -189,18 +170,17 @@
 
                 const contents = await response.json();
                 
-                // Sadece .html uzantılı ve 'e-s' klasörünün haricindeki ana oyun dosyalarını filtrele
+                // Sadece games/ altındaki .html dosyalarını alır
                 const htmlFiles = contents.filter(item => item.type === "file" && item.name.endsWith(".html"));
 
                 gameListContainer.innerHTML = "";
 
                 if (htmlFiles.length === 0) {
-                    gameListContainer.innerHTML = "<p>games klasöründe henüz oyun bulunamadı.</p>";
+                    gameListContainer.innerHTML = "<p>Henüz oyun bulunamadı.</p>";
                     return;
                 }
 
                 htmlFiles.forEach(file => {
-                    // Dosya adını al (örn: "oyun1.html" -> "oyun1")
                     const dosyaAdi = file.name.replace(".html", "");
                     const gorunenBaslik = dosyaAdi.replace(/-/g, " ");
                     
@@ -210,7 +190,6 @@
                     const card = document.createElement("div");
                     card.className = "game-card";
 
-                    // PNG yüklenemezse varsayılan başlık görseli gösterilir
                     card.innerHTML = `
                         <img class="game-icon" src="${pngPath}" alt="${gorunenBaslik}" onerror="this.onerror=null; this.src='https://via.placeholder.com/220x140/21262d/8b949e?text=${encodeURIComponent(gorunenBaslik)}';">
                         <div class="game-body">
@@ -228,7 +207,6 @@
             }
         }
 
-        // Sayfa yüklendiğinde GitHub'ı tara
         window.addEventListener("DOMContentLoaded", githubOyunlariniTara);
     </script>
 </body>
