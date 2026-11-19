@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MSM-GAMES - Oyun Salonu</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0d1117;
+            color: #c9d1d9;
+            text-align: center;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            user-select: none;
+        }
+
+        header {
+            padding: 40px 20px 20px 20px;
+            background: linear-gradient(180deg, #161b22 0%, #0d1117 100%);
+            border-bottom: 1px solid #30363d;
+        }
+
+        #site-logo {
+            font-size: 3.5rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            color: #58a6ff;
+            text-shadow: 0 0 15px rgba(88, 166, 255, 0.4);
+            cursor: pointer;
+            display: inline-block;
+            transition: transform 0.1s ease, color 0.3s ease;
+        }
+
+        #site-logo:hover {
+            color: #79c0ff;
+        }
+
+        #site-logo:active {
+            transform: scale(0.92);
+        }
+
+        .click-counter {
+            margin-top: 10px;
+            font-size: 0.95rem;
+            color: #8b949e;
+            font-weight: 600;
+            min-height: 24px;
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            width: 100%;
+        }
+
+        .game-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 25px;
+            justify-content: center;
+        }
+
+        .game-card {
+            background-color: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .game-card:hover {
+            transform: translateY(-6px);
+            border-color: #58a6ff;
+        }
+
+        .game-icon {
+            width: 100%;
+            height: 140px;
+            object-fit: cover;
+            background-color: #21262d;
+            border-bottom: 1px solid #30363d;
+        }
+
+        .game-body {
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .game-title {
+            font-size: 1.1rem;
+            color: #f0f6fc;
+            text-transform: capitalize;
+        }
+
+        .play-btn {
+            display: block;
+            width: 100%;
+            padding: 10px 0;
+            background-color: #238636;
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 6px;
+            transition: background-color 0.2s ease;
+        }
+
+        .play-btn:hover {
+            background-color: #2ea043;
+        }
+
+        footer {
+            padding: 20px;
+            font-size: 0.85rem;
+            color: #8b949e;
+            border-top: 1px solid #21262d;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1 id="site-logo">MSM-GAMES</h1>
+        <div class="click-counter" id="counter-text">Sürprizi açmak için logoya tıkla!</div>
+    </header>
+
+    <main>
+        <div id="game-list" class="game-container">
+            <p>GitHub deposundan oyunlar taranıyor...</p>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 MSM-GAMES</p>
+    </footer>
+
+    <script>
+        // 1. LOGO & EASTER EGG MANTIĞI (50 Tık - Görselsiz)
+        let clickCount = 0;
+        const targetClicks = 50;
+        const logo = document.getElementById("site-logo");
+        const counterText = document.getElementById("counter-text");
+        
+        const easterEggFile = "games/e-s/gizli-oyun.html"; 
+
+        logo.addEventListener("click", () => {
+            clickCount++;
+            const kalan = targetClicks - clickCount;
+
+            if (clickCount < targetClicks) {
+                counterText.textContent = `Gizli Easter Egg'e son ${kalan} tık!`;
+                if (kalan <= 10) {
+                    counterText.style.color = "#f85149";
+                }
+            } else {
+                counterText.textContent = "🎉 Tebrikler! E-S Easter Egg Açılıyor...";
+                setTimeout(() => {
+                    window.location.href = easterEggFile;
+                }, 200);
+            }
+        });
+
+        // 2. GİTHUB API İLE GÜNCEL DOSYA TARAMA MANTIĞI
+        async function githubOyunlariniTara() {
+            const gameListContainer = document.getElementById("game-list");
+            
+            // Senin GitHub deponun API adresi
+            const apiUrl = "https://api.github.com/repos/blatzz92/MSM-GAMES/contents/games";
+
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) {
+                    throw new Error("GitHub deposuna erişilemedi.");
+                }
+
+                const contents = await response.json();
+                
+                // Sadece .html uzantılı ve 'e-s' klasörünün haricindeki ana oyun dosyalarını filtrele
+                const htmlFiles = contents.filter(item => item.type === "file" && item.name.endsWith(".html"));
+
+                gameListContainer.innerHTML = "";
+
+                if (htmlFiles.length === 0) {
+                    gameListContainer.innerHTML = "<p>games klasöründe henüz oyun bulunamadı.</p>";
+                    return;
+                }
+
+                htmlFiles.forEach(file => {
+                    // Dosya adını al (örn: "oyun1.html" -> "oyun1")
+                    const dosyaAdi = file.name.replace(".html", "");
+                    const gorunenBaslik = dosyaAdi.replace(/-/g, " ");
+                    
+                    const htmlPath = `games/${file.name}`;
+                    const pngPath = `games/${dosyaAdi}.png`;
+
+                    const card = document.createElement("div");
+                    card.className = "game-card";
+
+                    // PNG yüklenemezse varsayılan başlık görseli gösterilir
+                    card.innerHTML = `
+                        <img class="game-icon" src="${pngPath}" alt="${gorunenBaslik}" onerror="this.onerror=null; this.src='https://via.placeholder.com/220x140/21262d/8b949e?text=${encodeURIComponent(gorunenBaslik)}';">
+                        <div class="game-body">
+                            <h3 class="game-title">${gorunenBaslik}</h3>
+                            <a href="${htmlPath}" class="play-btn">Oyna</a>
+                        </div>
+                    `;
+
+                    gameListContainer.appendChild(card);
+                });
+
+            } catch (error) {
+                console.error("Hata:", error);
+                gameListContainer.innerHTML = "<p>Oyunlar yüklenirken bir hata oluştu.</p>";
+            }
+        }
+
+        // Sayfa yüklendiğinde GitHub'ı tara
+        window.addEventListener("DOMContentLoaded", githubOyunlariniTara);
+    </script>
+</body>
+</html>
