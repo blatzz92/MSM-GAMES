@@ -20,33 +20,46 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            user-select: none;
+            user-select: none; /* Hızlı tıklamada metin seçilmesini engeller */
         }
 
         header {
-            padding: 40px 20px 30px 20px;
+            padding: 30px 20px;
             background: linear-gradient(180deg, #161b22 0%, #0d1117 100%);
             border-bottom: 1px solid #30363d;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
-        /* Standart logo görünümü - Hiçbir ipucu içermez */
-        #site-logo {
+        /* Logo Alanı (İster görsel, ister metin) */
+        .logo-container {
+            cursor: pointer;
+            display: inline-block;
+            transition: transform 0.1s ease;
+        }
+
+        .logo-container:active {
+            transform: scale(0.95);
+        }
+
+        #site-logo-img {
+            max-height: 70px;
+            object-fit: contain;
+        }
+
+        #site-logo-text {
             font-size: 3.5rem;
             font-weight: 900;
             letter-spacing: 2px;
             color: #58a6ff;
             text-shadow: 0 0 15px rgba(88, 166, 255, 0.4);
-            cursor: pointer;
-            display: inline-block;
-            transition: transform 0.1s ease, color 0.3s ease;
+            transition: color 0.3s ease;
         }
 
-        #site-logo:hover {
+        #site-logo-text:hover {
             color: #79c0ff;
-        }
-
-        #site-logo:active {
-            transform: scale(0.95);
         }
 
         main {
@@ -127,8 +140,11 @@
 <body>
 
     <header>
-        <!-- Logo sade duruyor, dışarıdan hiçbir şey belli etmiyor -->
-        <h1 id="site-logo">MSM-GAMES</h1>
+        <div class="logo-container" id="logo-trigger" title="MSM-GAMES">
+            <!-- Ana dizine logo.png eklersen otomatik onu gösterir, yoksa metin logosunu kullanır -->
+            <img id="site-logo-img" src="logo.png" alt="MSM-GAMES" onerror="this.style.display='none'; document.getElementById('site-logo-text').style.display='block';">
+            <h1 id="site-logo-text" style="display: none;">MSM-GAMES</h1>
+        </div>
     </header>
 
     <main>
@@ -138,26 +154,37 @@
     </main>
 
     <footer>
-        <p>&copy; 2026 MSM-GAMES</p>
+        <p>&copy; 2026 MSM-GAMES - Tüm Hakları Saklıdır.</p>
     </footer>
 
     <script>
-        // 1. TAMAMEN GİZLİ EASTER EGG MANTIĞI (50 Tık)
+        // ==========================================
+        // GİZLİ EASTER EGG SİSTEMİ (Zaman Aşımı Korumalı)
+        // ==========================================
         let clickCount = 0;
+        let clickTimer = null;
         const targetClicks = 50;
-        const logo = document.getElementById("site-logo");
+        const logoTrigger = document.getElementById("logo-trigger");
         const easterEggFile = "games/e-s/gizli-oyun.html"; 
 
-        logo.addEventListener("click", () => {
+        logoTrigger.addEventListener("click", () => {
             clickCount++;
-            
-            // 50 tıka ulaşıldığında sessizce yönlendirir
+
+            // Eğer kullanıcı 3 saniye içinde tekrar tıklamazsa sayaç sıfırlanır (yanlışlıkla açılmayı önler)
+            clearTimeout(clickTimer);
+            clickTimer = setTimeout(() => {
+                clickCount = 0;
+            }, 3000);
+
+            // 50'ye ulaşıldığında gizli sayfaya yönlendir
             if (clickCount >= targetClicks) {
                 window.location.href = easterEggFile;
             }
         });
 
-        // 2. GİTHUB API İLE OTOMATİK OYUN VE PNG TARAMA
+        // ==========================================
+        // GİTHUB API İLE OYUN VE PNG OTOMATİK TARAMA
+        // ==========================================
         async function githubOyunlariniTara() {
             const gameListContainer = document.getElementById("game-list");
             const apiUrl = "https://api.github.com/repos/blatzz92/MSM-GAMES/contents/games";
@@ -170,13 +197,13 @@
 
                 const contents = await response.json();
                 
-                // Sadece games/ altındaki .html dosyalarını alır
+                // Sadece games/ klasöründeki .html dosyalarını filtrele
                 const htmlFiles = contents.filter(item => item.type === "file" && item.name.endsWith(".html"));
 
                 gameListContainer.innerHTML = "";
 
                 if (htmlFiles.length === 0) {
-                    gameListContainer.innerHTML = "<p>Henüz oyun bulunamadı.</p>";
+                    gameListContainer.innerHTML = "<p>games klasöründe henüz oyun bulunamadı.</p>";
                     return;
                 }
 
@@ -190,6 +217,7 @@
                     const card = document.createElement("div");
                     card.className = "game-card";
 
+                    // Resim bulunamazsa şık bir yer tutucu (placeholder) gösterir
                     card.innerHTML = `
                         <img class="game-icon" src="${pngPath}" alt="${gorunenBaslik}" onerror="this.onerror=null; this.src='https://via.placeholder.com/220x140/21262d/8b949e?text=${encodeURIComponent(gorunenBaslik)}';">
                         <div class="game-body">
