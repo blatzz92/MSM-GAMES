@@ -3,8 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MSM-GAMES</title>
+    <title>MSM-GAMES - Arcade Portal</title>
     <style>
+        :root {
+            --bg-main: #070b12;
+            --bg-card: rgba(13, 22, 38, 0.45);
+            --border-color: rgba(0, 210, 255, 0.2);
+            --accent-blue: #00d2ff;
+            --accent-blue-glow: rgba(0, 210, 255, 0.4);
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
@@ -12,58 +22,146 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #0d1117;
-            color: #c9d1d9;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-main);
+            background-image: 
+                radial-gradient(at 10% 20%, rgba(0, 210, 255, 0.12) 0px, transparent 50%),
+                radial-gradient(at 90% 80%, rgba(0, 150, 255, 0.08) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: var(--text-main);
             text-align: center;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            user-select: none; /* Hızlı tıklamada metin seçilmesini engeller */
+            user-select: none;
+            overflow-x: hidden;
         }
 
-        header {
-            padding: 30px 20px;
-            background: linear-gradient(180deg, #161b22 0%, #0d1117 100%);
-            border-bottom: 1px solid #30363d;
+        /* 1. GİRİŞ EKRANI */
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(7, 11, 18, 0.85);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.6s ease, visibility 0.6s;
         }
 
-        /* Logo Alanı (İster görsel, ister metin) */
+        .splash-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 25px;
+            animation: splashEntrance 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+
+        @keyframes splashEntrance {
+            0% { opacity: 0; transform: scale(0.85) translateY(20px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        #splash-logo {
+            max-width: 200px;
+            width: 100%;
+            height: auto;
+            filter: drop-shadow(0 0 30px var(--accent-blue-glow));
+        }
+
+        #continue-btn {
+            padding: 13px 40px;
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: #070b12;
+            background: var(--accent-blue);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 25px var(--accent-blue-glow);
+        }
+
+        #continue-btn:hover {
+            transform: translateY(-2px) scale(1.03);
+            background: #33dcff;
+            box-shadow: 0 0 35px rgba(0, 210, 255, 0.7);
+        }
+
+        /* 2. HEADER VE ŞEFFAK ARAMA */
+        header {
+            padding: 25px 20px;
+            background: rgba(13, 22, 38, 0.35);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 18px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
         .logo-container {
             cursor: pointer;
             display: inline-block;
-            transition: transform 0.1s ease;
+            transition: transform 0.2s ease;
         }
 
         .logo-container:active {
-            transform: scale(0.95);
+            transform: scale(0.92);
         }
 
-        #site-logo-img {
-            max-height: 70px;
+        #site-header-logo {
+            max-height: 55px;
+            width: auto;
             object-fit: contain;
+            filter: drop-shadow(0 0 10px var(--accent-blue-glow));
         }
 
-        #site-logo-text {
-            font-size: 3.5rem;
-            font-weight: 900;
-            letter-spacing: 2px;
-            color: #58a6ff;
-            text-shadow: 0 0 15px rgba(88, 166, 255, 0.4);
-            transition: color 0.3s ease;
+        .search-container {
+            width: 100%;
+            max-width: 420px;
         }
 
-        #site-logo-text:hover {
-            color: #79c0ff;
+        #search-input {
+            width: 100%;
+            padding: 12px 22px;
+            font-size: 0.95rem;
+            border-radius: 50px;
+            border: 1px solid var(--border-color);
+            background: rgba(7, 11, 18, 0.4);
+            color: var(--text-main);
+            outline: none;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
+        #search-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        #search-input:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 20px var(--accent-blue-glow), inset 0 2px 4px rgba(0, 0, 0, 0.2);
+            background: rgba(7, 11, 18, 0.6);
+        }
+
+        /* 3. OYUN KARTLARI */
         main {
-            max-width: 1200px;
+            max-width: 1280px;
             margin: 0 auto;
             padding: 40px 20px;
             width: 100%;
@@ -71,17 +169,19 @@
 
         .game-container {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
             gap: 25px;
             justify-content: center;
         }
 
         .game-card {
-            background-color: #161b22;
-            border: 1px solid #30363d;
-            border-radius: 12px;
+            background: var(--bg-card);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
             overflow: hidden;
-            transition: transform 0.2s ease, border-color 0.2s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -89,27 +189,40 @@
 
         .game-card:hover {
             transform: translateY(-6px);
-            border-color: #58a6ff;
+            border-color: var(--accent-blue);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 20px var(--accent-blue-glow);
+        }
+
+        .game-icon-wrapper {
+            width: 100%;
+            height: 145px;
+            overflow: hidden;
+            background-color: rgba(7, 11, 18, 0.3);
         }
 
         .game-icon {
             width: 100%;
-            height: 140px;
+            height: 100%;
             object-fit: cover;
-            background-color: #21262d;
-            border-bottom: 1px solid #30363d;
+            border-bottom: 1px solid var(--border-color);
+            transition: transform 0.4s ease;
+        }
+
+        .game-card:hover .game-icon {
+            transform: scale(1.06);
         }
 
         .game-body {
-            padding: 15px;
+            padding: 16px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
         }
 
         .game-title {
-            font-size: 1.1rem;
-            color: #f0f6fc;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text-main);
             text-transform: capitalize;
         }
 
@@ -117,123 +230,185 @@
             display: block;
             width: 100%;
             padding: 10px 0;
-            background-color: #238636;
-            color: #ffffff;
+            background: var(--accent-blue);
+            color: #070b12;
             text-decoration: none;
-            font-weight: bold;
-            border-radius: 6px;
-            transition: background-color 0.2s ease;
+            font-weight: 700;
+            font-size: 0.9rem;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px var(--accent-blue-glow);
         }
 
         .play-btn:hover {
-            background-color: #2ea043;
+            background: #33dcff;
+            box-shadow: 0 6px 18px rgba(0, 210, 255, 0.6);
+            transform: translateY(-1px);
         }
 
+        /* 4. FOOTER VE BİLGİ (INFO) PANELİ */
         footer {
-            padding: 20px;
+            padding: 30px 20px;
             font-size: 0.85rem;
-            color: #8b949e;
-            border-top: 1px solid #21262d;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-color);
+            background: rgba(13, 22, 38, 0.35);
+            backdrop-filter: blur(12px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .info-panel {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 25px;
+            max-width: 800px;
+            padding: 12px 20px;
+            background: rgba(7, 11, 18, 0.3);
+            border: 1px solid rgba(0, 210, 255, 0.1);
+            border-radius: 12px;
+            font-size: 0.9rem;
+        }
+
+        .info-item span {
+            color: var(--accent-blue);
+            font-weight: 600;
         }
     </style>
 </head>
 <body>
 
+    <!-- AÇILIŞ EKRANI -->
+    <div id="splash-screen">
+        <div class="splash-content">
+            <img id="splash-logo" src="icon.png" alt="MSM-GAMES Logo">
+            <button id="continue-btn">OYUNA BAŞLA</button>
+        </div>
+    </div>
+
+    <!-- ANA SİTE -->
     <header>
-        <div class="logo-container" id="logo-trigger" title="MSM-GAMES">
-            <!-- Ana dizine logo.png eklersen otomatik onu gösterir, yoksa metin logosunu kullanır -->
-            <img id="site-logo-img" src="logo.png" alt="MSM-GAMES" onerror="this.style.display='none'; document.getElementById('site-logo-text').style.display='block';">
-            <h1 id="site-logo-text" style="display: none;">MSM-GAMES</h1>
+        <div class="logo-container" id="logo-trigger">
+            <img id="site-header-logo" src="icon.png" alt="MSM-GAMES">
+        </div>
+
+        <div class="search-container">
+            <input type="text" id="search-input" placeholder="Oyunlarda ara..." autocomplete="off">
         </div>
     </header>
 
     <main>
         <div id="game-list" class="game-container">
-            <p>Oyunlar yükleniyor...</p>
+            <p style="color: var(--text-muted);">Oyun kütüphanesi yükleniyor...</p>
         </div>
     </main>
 
+    <!-- FOOTER VE BİLGİ PANELİ -->
     <footer>
+        <div class="info-panel">
+            <div class="info-item">Sürüm: <span>20kasım 2026 build</span></div>
+            <div class="info-item">Oyun Motoru: <span>tri-engine</span></div>
+            <div class="info-item">Destekçiler: <span>Blatzz_92,Mcreating0M,WQS</span></div>
+        </div>
         <p>&copy; 2026 MSM-GAMES - Tüm Hakları Saklıdır.</p>
     </footer>
 
     <script>
-        // ==========================================
-        // GİZLİ EASTER EGG SİSTEMİ (Zaman Aşımı Korumalı)
-        // ==========================================
+        // 1. DEVAM BUTONU GEÇİŞİ
+        const continueBtn = document.getElementById("continue-btn");
+        const splashScreen = document.getElementById("splash-screen");
+
+        continueBtn.addEventListener("click", () => {
+            splashScreen.style.opacity = "0";
+            splashScreen.style.visibility = "hidden";
+        });
+
+        // 2. GİZLİ EASTER EGG SİSTEMİ (50 Tık / 3s Korumalı)
         let clickCount = 0;
         let clickTimer = null;
-        const targetClicks = 29;
+        const targetClicks = 50;
         const logoTrigger = document.getElementById("logo-trigger");
         const easterEggFile = "games/e-s/gizli-oyun.html"; 
 
         logoTrigger.addEventListener("click", () => {
             clickCount++;
-
-            // Eğer kullanıcı 3 saniye içinde tekrar tıklamazsa sayaç sıfırlanır (yanlışlıkla açılmayı önler)
             clearTimeout(clickTimer);
-            clickTimer = setTimeout(() => {
-                clickCount = 0;
-            }, 3000);
+            clickTimer = setTimeout(() => { clickCount = 0; }, 3000);
 
-            // 50'ye ulaşıldığında gizli sayfaya yönlendir
             if (clickCount >= targetClicks) {
                 window.location.href = easterEggFile;
             }
         });
 
-        // ==========================================
-        // GİTHUB API İLE OYUN VE PNG OTOMATİK TARAMA
-        // ==========================================
+        // 3. GİTHUB API & CANLI ARAMA MANTIĞI
+        let tumOyunlar = [];
+
         async function githubOyunlariniTara() {
             const gameListContainer = document.getElementById("game-list");
             const apiUrl = "https://api.github.com/repos/blatzz92/MSM-GAMES/contents/games";
 
             try {
                 const response = await fetch(apiUrl);
-                if (!response.ok) {
-                    throw new Error("GitHub deposuna erişilemedi.");
-                }
+                if (!response.ok) throw new Error("Depoya erişilemedi.");
 
                 const contents = await response.json();
-                
-                // Sadece games/ klasöründeki .html dosyalarını filtrele
                 const htmlFiles = contents.filter(item => item.type === "file" && item.name.endsWith(".html"));
 
-                gameListContainer.innerHTML = "";
-
-                if (htmlFiles.length === 0) {
-                    gameListContainer.innerHTML = "<p>games klasöründe henüz oyun bulunamadı.</p>";
-                    return;
-                }
-
-                htmlFiles.forEach(file => {
+                tumOyunlar = htmlFiles.map(file => {
                     const dosyaAdi = file.name.replace(".html", "");
-                    const gorunenBaslik = dosyaAdi.replace(/-/g, " ");
-                    
-                    const htmlPath = `games/${file.name}`;
-                    const pngPath = `games/${dosyaAdi}.png`;
-
-                    const card = document.createElement("div");
-                    card.className = "game-card";
-
-                    // Resim bulunamazsa şık bir yer tutucu (placeholder) gösterir
-                    card.innerHTML = `
-                        <img class="game-icon" src="${pngPath}" alt="${gorunenBaslik}" onerror="this.onerror=null; this.src='https://via.placeholder.com/220x140/21262d/8b949e?text=${encodeURIComponent(gorunenBaslik)}';">
-                        <div class="game-body">
-                            <h3 class="game-title">${gorunenBaslik}</h3>
-                            <a href="${htmlPath}" class="play-btn">Oyna</a>
-                        </div>
-                    `;
-
-                    gameListContainer.appendChild(card);
+                    return {
+                        name: file.name,
+                        dosyaAdi: dosyaAdi,
+                        baslik: dosyaAdi.replace(/-/g, " "),
+                        htmlPath: `games/${file.name}`,
+                        pngPath: `games/${dosyaAdi}.png`
+                    };
                 });
+
+                oyunlariEkranaBas(tumOyunlar);
 
             } catch (error) {
                 console.error("Hata:", error);
-                gameListContainer.innerHTML = "<p>Oyunlar yüklenirken bir hata oluştu.</p>";
+                gameListContainer.innerHTML = "<p style='color: #ef4444;'>Oyunlar yüklenirken bir sorun oluştu.</p>";
             }
         }
+
+        function oyunlariEkranaBas(oyunListesi) {
+            const gameListContainer = document.getElementById("game-list");
+            gameListContainer.innerHTML = "";
+
+            if (oyunListesi.length === 0) {
+                gameListContainer.innerHTML = "<p style='color: var(--text-muted);'>Aradığınız kriterlere uygun oyun bulunamadı.</p>";
+                return;
+            }
+
+            oyunListesi.forEach(game => {
+                const card = document.createElement("div");
+                card.className = "game-card";
+                card.innerHTML = `
+                    <div class="game-icon-wrapper">
+                        <img class="game-icon" src="${game.pngPath}" alt="${game.baslik}" onerror="this.onerror=null; this.src='https://via.placeholder.com/240x145/0d1626/94a3b8?text=${encodeURIComponent(game.baslik)}';">
+                    </div>
+                    <div class="game-body">
+                        <h3 class="game-title">${game.baslik}</h3>
+                        <a href="${game.htmlPath}" class="play-btn">OYNA</a>
+                    </div>
+                `;
+                gameListContainer.appendChild(card);
+            });
+        }
+
+        const searchInput = document.getElementById("search-input");
+        searchInput.addEventListener("input", (e) => {
+            const arananKelime = e.target.value.toLowerCase().trim();
+            const filtrelenmis = tumOyunlar.filter(game => 
+                game.baslik.toLowerCase().includes(arananKelime)
+            );
+            oyunlariEkranaBas(filtrelenmis);
+        });
 
         window.addEventListener("DOMContentLoaded", githubOyunlariniTara);
     </script>
