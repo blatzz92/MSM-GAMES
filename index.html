@@ -94,7 +94,7 @@
         }
 
         #splash-logo {
-            max-width: 210px;
+            max-width: 250px;
             width: 100%;
             height: auto;
             filter: drop-shadow(0 0 25px var(--glass-glow));
@@ -133,9 +133,9 @@
             transform: translateY(0);
         }
 
-        /* 2. HEADER VE ARAMA ÇUBUĞU */
+        /* 2. HEADER, BÜYÜTÜLMÜŞ İKON VE DİL SEÇİCİ */
         header {
-            padding: 25px 20px;
+            padding: 20px 20px;
             background: var(--glass-bg);
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
@@ -144,10 +144,18 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 18px;
+            gap: 15px;
             position: sticky;
             top: 0;
             z-index: 100;
+        }
+
+        .header-top {
+            display: flex;
+            width: 100%;
+            max-width: 1200px;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .logo-container {
@@ -160,11 +168,37 @@
             transform: scale(0.93);
         }
 
+        /* Büyütülmüş İkon */
         #site-header-logo {
-            max-height: 55px;
+            max-height: 80px;
             width: auto;
             object-fit: contain;
-            filter: drop-shadow(0 0 10px var(--glass-glow));
+            filter: drop-shadow(0 0 12px var(--glass-glow));
+        }
+
+        /* Şık Dil Seçici */
+        .lang-selector {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            padding: 8px 14px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            outline: none;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .lang-selector:hover {
+            border-color: var(--cyan-primary);
+            box-shadow: 0 0 10px var(--glass-glow);
+        }
+
+        .lang-selector option {
+            background: #0f172a;
+            color: #fff;
         }
 
         .search-container {
@@ -228,7 +262,6 @@
             position: relative;
         }
 
-        /* Kart Üzerinden Geçen Parlama Efekti */
         .game-card::after {
             content: '';
             position: absolute;
@@ -343,6 +376,11 @@
             color: var(--cyan-primary);
             font-weight: 600;
         }
+
+        /* Google Translate Widget Düzenlemesi */
+        .goog-te-banner-frame { display: none !important; }
+        body { top: 0 !important; }
+        #google_translate_element { display: none; }
     </style>
 </head>
 <body>
@@ -351,7 +389,10 @@
     <div class="bg-glow-1"></div>
     <div class="bg-glow-2"></div>
 
-    <!-- AÇILIŞ EKRANI (Doğrudan buton içi onclick ile hatasız tetiklenir) -->
+    <!-- GİZLİ GOOGLE TRANSLATE ÇERÇEVESİ -->
+    <div id="google_translate_element"></div>
+
+    <!-- AÇILIŞ EKRANI -->
     <div id="splash-screen">
         <div class="splash-content">
             <img id="splash-logo" src="icon.png" alt="Logo">
@@ -361,9 +402,20 @@
 
     <!-- ANA SİTE -->
     <header>
-        <div class="logo-container" id="logo-trigger">
-            <img id="site-header-logo" src="icon.png" alt="Logo">
+        <div class="header-top">
+            <div style="width: 70px;"></div>
+            
+            <div class="logo-container" id="logo-trigger">
+                <img id="site-header-logo" src="icon.png" alt="Logo">
+            </div>
+
+            <!-- Dil Seçici (TR / EN) -->
+            <select id="lang-select" class="lang-selector" onchange="changeLanguage(this.value)">
+                <option value="tr">TR</option>
+                <option value="en">EN</option>
+            </select>
         </div>
+
         <div class="search-container">
             <input type="text" id="search-input" placeholder="Oyunlarda ara..." autocomplete="off">
         </div>
@@ -377,12 +429,41 @@
 
     <footer>
         <div class="info-panel">
-            <div class="info-item">Sürüm: <span>20 Kasım 2026 build</span></div>
+            <div class="info-item">Sürüm: <span>20 Kasım 2026 1727build</span></div>
             <div class="info-item">Oyun Motoru: <span>Tri-engine</span></div>
             <div class="info-item">Yapımcılar: <span>Blatzz_92,Mcreating0M,WQS</span></div>
         </div>
         <p>&copy; 2026 MSM-GAMES - Tüm Hakları Saklıdır.</p>
     </footer>
+
+    <!-- Google Translate Script -->
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'tr',
+                includedLanguages: 'en,tr',
+                autoDisplay: false
+            }, 'google_translate_element');
+        }
+
+        function changeLanguage(lang) {
+            if (lang === 'en') {
+                document.cookie = "googtrans=/tr/en; path=/";
+            } else {
+                document.cookie = "googtrans=/tr/tr; path=/";
+            }
+            location.reload();
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const match = document.cookie.match(new RegExp('(^| )googtrans=([^;]+)'));
+            if (match && match[2].includes('en')) {
+                const select = document.getElementById('lang-select');
+                if (select) select.value = 'en';
+            }
+        });
+    </script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
     <script>
         // Gizli Easter Egg Sistemi (50 Tık)
