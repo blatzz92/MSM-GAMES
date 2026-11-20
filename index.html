@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="tr" id="html-root">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MSM-GAMES</title>
+    <title id="site-title">MSM-GAMES</title>
     <style>
         :root {
             --glass-bg: rgba(10, 25, 47, 0.45);
@@ -90,7 +90,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 30px;
+            gap: 25px;
         }
 
         #splash-logo {
@@ -105,7 +105,38 @@
             transform: scale(1.04);
         }
 
-        /* Şeffaf Cam Buton */
+        .splash-lang-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .splash-lang-label {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+        }
+
+        .splash-lang-select {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--cyan-primary);
+            color: var(--text-main);
+            padding: 10px 25px;
+            border-radius: 20px;
+            font-size: 1rem;
+            outline: none;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .splash-lang-select option {
+            background: #0f172a;
+            color: #fff;
+        }
+
         #continue-btn {
             padding: 13px 40px;
             font-size: 1.05rem;
@@ -120,6 +151,7 @@
             transition: all 0.3s ease;
             box-shadow: 0 4px 20px rgba(0, 210, 255, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.4);
             letter-spacing: 0.5px;
+            margin-top: 10px;
         }
 
         #continue-btn:hover {
@@ -133,7 +165,7 @@
             transform: translateY(0);
         }
 
-        /* 2. HEADER, BÜYÜTÜLMÜŞ İKON VE DİL SEÇİCİ */
+        /* 2. HEADER VE DİL SEÇİCİ */
         header {
             padding: 20px 20px;
             background: var(--glass-bg);
@@ -168,7 +200,6 @@
             transform: scale(0.93);
         }
 
-        /* Büyütülmüş İkon */
         #site-header-logo {
             max-height: 80px;
             width: auto;
@@ -176,7 +207,6 @@
             filter: drop-shadow(0 0 12px var(--glass-glow));
         }
 
-        /* Şık Dil Seçici */
         .lang-selector {
             background: rgba(15, 23, 42, 0.5);
             border: 1px solid var(--glass-border);
@@ -230,7 +260,7 @@
             background: rgba(15, 23, 42, 0.6);
         }
 
-        /* 3. OYUN KARTLARI VE IŞIK YANSIMASI (SHİMMER EFEKTİ) */
+        /* 3. OYUN KARTLARI */
         main {
             max-width: 1280px;
             margin: 0 auto;
@@ -340,7 +370,7 @@
             transform: translateY(-1px);
         }
 
-        /* 4. FOOTER VE BİLGİ PANELİ */
+        /* 4. FOOTER */
         footer {
             padding: 30px 20px;
             font-size: 0.85rem;
@@ -376,27 +406,27 @@
             color: var(--cyan-primary);
             font-weight: 600;
         }
-
-        /* Google Translate Widget Düzenlemesi */
-        .goog-te-banner-frame { display: none !important; }
-        body { top: 0 !important; }
-        #google_translate_element { display: none; }
     </style>
 </head>
 <body>
 
-    <!-- ARKA PLAN IŞIK EFEKTLERİ -->
     <div class="bg-glow-1"></div>
     <div class="bg-glow-2"></div>
-
-    <!-- GİZLİ GOOGLE TRANSLATE ÇERÇEVESİ -->
-    <div id="google_translate_element"></div>
 
     <!-- AÇILIŞ EKRANI -->
     <div id="splash-screen">
         <div class="splash-content">
             <img id="splash-logo" src="icon.png" alt="Logo">
-            <button id="continue-btn" type="button" onclick="document.getElementById('splash-screen').style.opacity='0'; setTimeout(() => document.getElementById('splash-screen').style.display='none', 400);">SİTEYE GİRİŞ YAP</button>
+            
+            <div class="splash-lang-container">
+                <span class="splash-lang-label" id="lbl-select-lang">Dil Seçin / Select Language</span>
+                <select id="splash-lang-select" class="splash-lang-select" onchange="dilGuncelle(this.value)">
+                    <option value="tr">Türkçe (TR)</option>
+                    <option value="en">English (EN)</option>
+                </select>
+            </div>
+
+            <button id="continue-btn" type="button" onclick="siteyeGirisYap()">SİTEYE GİRİŞ YAP</button>
         </div>
     </div>
 
@@ -409,8 +439,7 @@
                 <img id="site-header-logo" src="icon.png" alt="Logo">
             </div>
 
-            <!-- Dil Seçici (TR / EN) -->
-            <select id="lang-select" class="lang-selector" onchange="changeLanguage(this.value)">
+            <select id="lang-select" class="lang-selector" onchange="dilGuncelle(this.value)">
                 <option value="tr">TR</option>
                 <option value="en">EN</option>
             </select>
@@ -423,49 +452,87 @@
 
     <main>
         <div id="game-list" class="game-container">
-            <p style="color: var(--text-muted);">Oyun kütüphanesi yükleniyor...</p>
+            <p id="loading-text" style="color: var(--text-muted);">Oyun kütüphanesi yükleniyor...</p>
         </div>
     </main>
 
     <footer>
         <div class="info-panel">
-            <div class="info-item">Sürüm: <span>20 Kasım 2026 1727build</span></div>
-            <div class="info-item">Oyun Motoru: <span>Tri-engine</span></div>
-            <div class="info-item">Yapımcılar: <span>Blatzz_92,Mcreating0M,WQS</span></div>
+            <div class="info-item" id="info-build">Sürüm: <span>20 Kasım 2026 1739build</span></div>
+            <div class="info-item" id="info-engine">Oyun Motoru: <span>Tri-engine</span></div>
+            <div class="info-item" id="info-devs">Yapımcılar: <span>Blatzz_92,Mcreating0M,WQS</span></div>
         </div>
-        <p>&copy; 2026 MSM-GAMES - Tüm Hakları Saklıdır.</p>
+        <p id="footer-copy">&copy; 2026 MSM-GAMES - Tüm Hakları Saklıdır.</p>
     </footer>
 
-    <!-- Google Translate Script -->
-    <script type="text/javascript">
-        function googleTranslateElementInit() {
-            new google.translate.TranslateElement({
-                pageLanguage: 'tr',
-                includedLanguages: 'en,tr',
-                autoDisplay: false
-            }, 'google_translate_element');
-        }
-
-        function changeLanguage(lang) {
-            if (lang === 'en') {
-                document.cookie = "googtrans=/tr/en; path=/";
-            } else {
-                document.cookie = "googtrans=/tr/tr; path=/";
+    <!-- Dil Çeviri ve Akış Yönetimi Mantığı -->
+    <script>
+        const translations = {
+            tr: {
+                selectLangLabel: "Dil Seçin / Select Language",
+                continueBtn: "SİTEYE GİRİŞ YAP",
+                searchPlaceholder: "Oyunlarda ara...",
+                loading: "Oyun kütüphanesi yükleniyor...",
+                noGames: "Oyun bulunamadı.",
+                errorGames: "Oyunlar yüklenirken bir sorun oluştu.",
+                playBtn: "OYNA",
+                build: "Sürüm: <span>20 Kasım 2026 1739build</span>",
+                engine: "Oyun Motoru: <span>Tri-engine</span>",
+                devs: "Yapımcılar: <span>Blatzz_92,Mcreating0M,WQS</span>",
+                copy: "&copy; 2026 MSM-GAMES - Tüm Hakları Saklıdır."
+            },
+            en: {
+                selectLangLabel: "Select Language / Dil Seçin",
+                continueBtn: "ENTER SITE",
+                searchPlaceholder: "Search games...",
+                loading: "Loading game library...",
+                noGames: "No games found.",
+                errorGames: "Error loading games.",
+                playBtn: "PLAY",
+                build: "Build: <span>20 Nov 2026 1739build</span>",
+                engine: "Game Engine: <span>Tri-engine</span>",
+                devs: "Developers: <span>Blatzz_92,Mcreating0M,WQS</span>",
+                copy: "&copy; 2026 MSM-GAMES - All Rights Reserved."
             }
-            location.reload();
+        };
+
+        function dilGuncelle(lang) {
+            localStorage.setItem("msm_lang", lang);
+            document.getElementById("html-root").lang = lang;
+
+            const t = translations[lang];
+            document.getElementById("lbl-select-lang").innerText = t.selectLangLabel;
+            document.getElementById("continue-btn").innerText = t.continueBtn;
+            document.getElementById("search-input").placeholder = t.searchPlaceholder;
+            document.getElementById("info-build").innerHTML = t.build;
+            document.getElementById("info-engine").innerHTML = t.engine;
+            document.getElementById("info-devs").innerHTML = t.devs;
+            document.getElementById("footer-copy").innerHTML = t.copy;
+
+            const splashSel = document.getElementById("splash-lang-select");
+            const headerSel = document.getElementById("lang-select");
+            if (splashSel) splashSel.value = lang;
+            if (headerSel) headerSel.value = lang;
+
+            if (typeof tumOyunlar !== 'undefined' && tumOyunlar.length > 0) {
+                oyunlariEkranaBas(tumOyunlar);
+            }
         }
 
         window.addEventListener('DOMContentLoaded', () => {
-            const match = document.cookie.match(new RegExp('(^| )googtrans=([^;]+)'));
-            if (match && match[2].includes('en')) {
-                const select = document.getElementById('lang-select');
-                if (select) select.value = 'en';
-            }
+            const kaydedilenDil = localStorage.getItem("msm_lang") || "tr";
+            dilGuncelle(kaydedilenDil);
+            githubOyunlariniTara();
         });
-    </script>
-    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
-    <script>
+        function siteyeGirisYap() {
+            const splash = document.getElementById("splash-screen");
+            splash.style.opacity = "0";
+            setTimeout(() => {
+                splash.style.display = "none";
+            }, 300);
+        }
+
         // Gizli Easter Egg Sistemi (50 Tık)
         let clickCount = 0;
         let clickTimer = null;
@@ -477,7 +544,8 @@
                 clearTimeout(clickTimer);
                 clickTimer = setTimeout(() => { clickCount = 0; }, 3000);
                 if (clickCount >= 50) {
-                    window.location.href = "games/e-s/gizli-oyun.html";
+                    const aktifDil = localStorage.getItem("msm_lang") || "tr";
+                    window.location.href = `games/e-s/gizli-oyun.html?lang=${aktifDil}`;
                 }
             });
         }
@@ -488,6 +556,7 @@
         async function githubOyunlariniTara() {
             const gameListContainer = document.getElementById("game-list");
             const apiUrl = "https://api.github.com/repos/blatzz92/MSM-GAMES/contents/games";
+            const aktifDil = localStorage.getItem("msm_lang") || "tr";
 
             try {
                 const response = await fetch(apiUrl);
@@ -507,29 +576,34 @@
 
                 oyunlariEkranaBas(tumOyunlar);
             } catch (error) {
-                gameListContainer.innerHTML = "<p style='color: #ef4444;'>Oyunlar yüklenirken bir sorun oluştu.</p>";
+                const t = translations[aktifDil];
+                gameListContainer.innerHTML = `<p style='color: #ef4444;'>${t.errorGames}</p>`;
             }
         }
 
         function oyunlariEkranaBas(oyunListesi) {
             const gameListContainer = document.getElementById("game-list");
             gameListContainer.innerHTML = "";
+            const aktifDil = localStorage.getItem("msm_lang") || "tr";
+            const t = translations[aktifDil];
 
             if (oyunListesi.length === 0) {
-                gameListContainer.innerHTML = "<p style='color: var(--text-muted);'>Oyun bulunamadı.</p>";
+                gameListContainer.innerHTML = `<p style='color: var(--text-muted);'>${t.noGames}</p>`;
                 return;
             }
 
             oyunListesi.forEach(game => {
                 const card = document.createElement("div");
                 card.className = "game-card";
+                const oyunLinki = `${game.htmlPath}?lang=${aktifDil}`;
+
                 card.innerHTML = `
                     <div class="game-icon-wrapper">
                         <img class="game-icon" src="${game.pngPath}" alt="${game.baslik}" onerror="this.src='https://via.placeholder.com/240x145/0f172a/94a3b8?text=${encodeURIComponent(game.baslik)}';">
                     </div>
                     <div class="game-body">
                         <h3 class="game-title">${game.baslik}</h3>
-                        <a href="${game.htmlPath}" class="play-btn">OYNA</a>
+                        <a href="${oyunLinki}" class="play-btn">${t.playBtn}</a>
                     </div>
                 `;
                 gameListContainer.appendChild(card);
@@ -544,8 +618,6 @@
                 oyunlariEkranaBas(filtrelenmis);
             });
         }
-
-        githubOyunlariniTara();
     </script>
 </body>
 </html>
