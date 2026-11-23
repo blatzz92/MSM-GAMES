@@ -1,0 +1,16 @@
+{
+  "tr": {
+    "title": "MSM-GAMES Hakkında",
+    "description": "MSM-GAMES topluluğunun oyun kütüphanesi.",
+    "version": "2026",
+    "engine": "Tri-engine",
+    "developers": ["Blatzz_92", "Mcreating0M", "WQS"]
+  },
+  "en": {
+    "title": "About MSM-GAMES",
+    "description": "The game library of the MSM-GAMES community.",
+    "version": "2026",
+    "engine": "Tri-engine",
+    "developers": ["Blatzz_92", "Mcreating0M", "WQS"]
+  }
+}
