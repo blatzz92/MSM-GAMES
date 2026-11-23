@@ -8,385 +8,43 @@
   <title>MSM-GAMES — Oyun Kütüphanesi</title>
   <link rel="icon" href="icon.png" type="image/png">
   <style>
-    :root {
-      color-scheme: dark;
-      --bg: #080b16;
-      --surface: rgba(18, 24, 43, .78);
-      --surface-strong: #151c31;
-      --line: rgba(177, 194, 255, .13);
-      --text: #f4f6ff;
-      --muted: #9aa6c4;
-      --accent: #73e1ff;
-      --accent-2: #a78bfa;
-      --radius: 22px;
-    }
-    *, *::before, *::after { box-sizing: border-box; }
-    html { min-width: 320px; scroll-behavior: smooth; }
-    body {
-      min-height: 100vh; margin: 0; color: var(--text);
-      background: radial-gradient(ellipse at 14% 0%, rgba(70, 91, 190, .22), transparent 38%),
-                  radial-gradient(ellipse at 92% 18%, rgba(0, 198, 218, .12), transparent 32%), var(--bg);
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-    button, input, select { font: inherit; }
-    button, a, select { -webkit-tap-highlight-color: transparent; }
-    a { color: inherit; }
-    .ambient { position: fixed; z-index: -1; inset: auto; width: 360px; height: 360px; border-radius: 50%; filter: blur(100px); opacity: .14; pointer-events: none; }
-    .ambient.one { top: 28%; left: -220px; background: #3478ff; }
-    .ambient.two { right: -240px; bottom: 5%; background: #00d9d0; }
-    .topbar { position: sticky; z-index: 5; top: 0; border-bottom: 1px solid var(--line); background: rgba(8, 11, 22, .78); backdrop-filter: blur(18px); }
-    .topbar-inner { width: min(1120px, calc(100% - 40px)); min-height: 76px; margin: auto; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
-    .brand { display: inline-flex; align-items: center; gap: 12px; text-decoration: none; font-weight: 850; letter-spacing: .07em; }
-    .brand img { width: 42px; height: 42px; border-radius: 13px; object-fit: cover; background: var(--surface-strong); box-shadow: 0 0 24px rgba(115, 225, 255, .18); }
-    .brand span { font-size: 1.03rem; }
-    .lang-select { min-width: 112px; padding: 10px 13px; color: var(--text); border: 1px solid var(--line); border-radius: 12px; outline: none; background: var(--surface-strong); cursor: pointer; }
-    .lang-select:focus-visible, .search:focus-visible, .btn:focus-visible, .icon-link:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
-    main { width: min(1120px, calc(100% - 40px)); margin: 0 auto; }
-    .hero { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 36px; padding: clamp(48px, 8vw, 96px) 0 48px; }
-    .eyebrow { display: inline-flex; align-items: center; gap: 8px; margin: 0 0 17px; color: var(--accent); font-size: .77rem; font-weight: 750; letter-spacing: .16em; text-transform: uppercase; }
-    .eyebrow::before { content: ""; width: 24px; height: 1px; background: currentColor; }
-    h1 { max-width: 680px; margin: 0; font-size: clamp(2.4rem, 6vw, 4.7rem); line-height: 1.03; letter-spacing: -.055em; }
-    .gradient-text { color: transparent; background: linear-gradient(100deg, var(--accent), #b6a1ff 75%); background-clip: text; -webkit-background-clip: text; }
-    .hero-copy { max-width: 590px; margin: 20px 0 0; color: var(--muted); font-size: clamp(1rem, 2vw, 1.1rem); line-height: 1.7; }
-    .hero-mark { display: grid; width: clamp(104px, 17vw, 176px); aspect-ratio: 1; place-items: center; border: 1px solid var(--line); border-radius: 34%; background: linear-gradient(145deg, rgba(115,225,255,.12), rgba(167,139,250,.1)); box-shadow: 0 25px 90px rgba(45, 114, 211, .13), inset 0 1px 0 rgba(255,255,255,.07); transform: rotate(5deg); }
-    .hero-mark img { width: 70%; height: 70%; object-fit: contain; border-radius: 22%; transform: rotate(-5deg); }
-    .library { padding: 14px 0 76px; }
-    .library-head { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 24px; }
-    .section-kicker { margin: 0 0 7px; color: var(--muted); font-size: .8rem; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; }
-    h2 { margin: 0; font-size: clamp(1.55rem, 3vw, 2rem); letter-spacing: -.035em; }
-    .count { margin-left: 9px; color: var(--muted); font-size: .9rem; font-weight: 500; }
-    .search-wrap { position: relative; width: min(310px, 42%); }
-    .search-icon { position: absolute; top: 50%; left: 15px; color: var(--muted); transform: translateY(-50%); pointer-events: none; }
-    .search { width: 100%; padding: 13px 15px 13px 43px; color: var(--text); border: 1px solid var(--line); border-radius: 14px; outline: none; background: rgba(19, 26, 46, .74); transition: border-color .2s, box-shadow .2s; }
-    .search::placeholder { color: #7885a4; }
-    .search:focus { border-color: rgba(115,225,255,.55); box-shadow: 0 0 0 4px rgba(115,225,255,.08); }
-    .game-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 18px; }
-    .game-card { min-width: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); box-shadow: 0 12px 35px rgba(0,0,0,.15); transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease; }
-    .game-card:hover { transform: translateY(-5px); border-color: rgba(115,225,255,.42); box-shadow: 0 20px 45px rgba(0,0,0,.28), 0 0 30px rgba(115,225,255,.07); }
-    .game-art { position: relative; display: grid; aspect-ratio: 16 / 10; overflow: hidden; place-items: center; background: linear-gradient(145deg, #1a2540, #101626); }
-    .game-art::after { position: absolute; inset: 45% 0 0; content: ""; background: linear-gradient(transparent, rgba(8,11,22,.55)); pointer-events: none; }
-    .game-art img { width: 100%; height: 100%; object-fit: cover; transition: transform .35s ease; }
-    .game-card:hover .game-art img { transform: scale(1.045); }
-    .game-art-fallback { color: rgba(115,225,255,.75); font-size: 2.4rem; font-weight: 800; }
-    .game-body { padding: 17px; }
-    .game-title { min-height: 2.8em; margin: 0 0 15px; overflow-wrap: anywhere; font-size: 1.05rem; line-height: 1.4; }
-    .card-actions { display: flex; gap: 9px; }
-    .btn { display: inline-flex; min-height: 42px; flex: 1; align-items: center; justify-content: center; gap: 7px; padding: 10px 12px; border: 1px solid transparent; border-radius: 11px; text-align: center; text-decoration: none; font-size: .88rem; font-weight: 750; transition: transform .18s, background .18s, border-color .18s; }
-    .btn:hover { transform: translateY(-1px); }
-    .btn-primary { color: #07121c; background: linear-gradient(105deg, #80e8ff, #a9d8ff); }
-    .btn-primary:hover { background: #b6efff; }
-    .btn-secondary { color: var(--text); border-color: var(--line); background: rgba(255,255,255,.035); }
-    .btn-secondary:hover { border-color: rgba(167,139,250,.55); background: rgba(167,139,250,.1); }
-    .status { grid-column: 1 / -1; padding: 50px 20px; color: var(--muted); text-align: center; border: 1px dashed var(--line); border-radius: 18px; line-height: 1.7; }
-    .status strong { display: block; margin-bottom: 6px; color: var(--text); font-size: 1.05rem; }
-    .status button { margin-top: 12px; }
-    footer { padding: 26px 20px 34px; color: var(--muted); text-align: center; border-top: 1px solid var(--line); font-size: .85rem; }
-    footer p { margin: 0; }
-    /* Açılış introsu */
-    .splash { position: fixed; z-index: 20; inset: 0; display: grid; place-items: center; padding: 24px; background: radial-gradient(ellipse at center, #17233c 0%, #090d19 68%); transition: opacity .55s ease, visibility .55s ease; }
-    .splash.is-hidden { visibility: hidden; opacity: 0; pointer-events: none; }
-    .splash-inner { display: flex; width: min(420px, 100%); flex-direction: column; align-items: center; text-align: center; animation: intro-in .8s cubic-bezier(.2,.8,.2,1) both; }
-    .splash-logo-wrap { display: grid; width: 158px; height: 158px; margin-bottom: 25px; place-items: center; border: 1px solid rgba(115,225,255,.2); border-radius: 38px; background: rgba(255,255,255,.035); box-shadow: 0 0 75px rgba(115,225,255,.13); animation: logo-float 3s ease-in-out infinite; }
-    .splash-logo { width: 78%; height: 78%; object-fit: contain; border-radius: 24px; }
-    .splash-name { margin: 0; font-size: 1.8rem; font-weight: 850; letter-spacing: .13em; }
-    .splash-subtitle { margin: 10px 0 28px; color: var(--muted); }
-    .splash-language { margin-bottom: 16px; }
-    .continue { min-width: 205px; padding: 14px 22px; color: #07121c; border: 0; border-radius: 13px; background: linear-gradient(105deg, #80e8ff, #b5a2ff); box-shadow: 0 10px 35px rgba(91,179,255,.2); cursor: pointer; font-weight: 800; transition: transform .2s, box-shadow .2s; }
-    .continue:hover { transform: translateY(-2px); box-shadow: 0 14px 42px rgba(91,179,255,.32); }
-    .continue:focus-visible { outline: 3px solid white; outline-offset: 4px; }
-    @keyframes intro-in { from { opacity: 0; transform: translateY(16px) scale(.97); } to { opacity: 1; transform: none; } }
-    @keyframes logo-float { 50% { transform: translateY(-7px); } }
-    @media (max-width: 650px) {
-      .topbar-inner, main { width: min(100% - 30px, 1120px); }
-      .topbar-inner { min-height: 66px; }
-      .hero { grid-template-columns: 1fr; gap: 24px; padding: 56px 0 38px; }
-      .hero-mark { display: none; }
-      .library-head { align-items: stretch; flex-direction: column; gap: 18px; }
-      .search-wrap { width: 100%; }
-      .game-grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); gap: 13px; }
-    }
-    @media (max-width: 390px) {
-      .brand span { font-size: .9rem; }
-      .brand img { width: 36px; height: 36px; }
-      .lang-select { min-width: 95px; }
-      .game-grid { grid-template-columns: 1fr; }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
-    }
+    :root{color-scheme:dark;--bg:#080b16;--surface:rgba(18,24,43,.78);--strong:#151c31;--line:rgba(177,194,255,.13);--text:#f4f6ff;--muted:#9aa6c4;--accent:#73e1ff;--purple:#a78bfa}
+    *{box-sizing:border-box}html{min-width:320px;scroll-behavior:smooth}body{min-height:100vh;margin:0;color:var(--text);background:radial-gradient(ellipse at 14% 0%,rgba(70,91,190,.22),transparent 38%),radial-gradient(ellipse at 92% 18%,rgba(0,198,218,.12),transparent 32%),var(--bg);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}button,input,select{font:inherit}a{color:inherit}.topbar{position:sticky;z-index:5;top:0;border-bottom:1px solid var(--line);background:rgba(8,11,22,.86);backdrop-filter:blur(18px)}.topbar-inner{width:min(1120px,calc(100% - 40px));min-height:76px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:20px}.brand{display:inline-flex;align-items:center;gap:12px;text-decoration:none;font-weight:850;letter-spacing:.07em}.brand img{width:42px;height:42px;border-radius:13px;object-fit:cover;background:var(--strong);box-shadow:0 0 24px rgba(115,225,255,.18);cursor:pointer}.brand span{font-size:1.03rem}.lang-select{min-width:112px;padding:10px 13px;color:var(--text);border:1px solid var(--line);border-radius:12px;outline:none;background:var(--strong);cursor:pointer}main{width:min(1120px,calc(100% - 40px));margin:auto}.hero{display:grid;grid-template-columns:1fr auto;align-items:center;gap:36px;padding:clamp(48px,8vw,96px) 0 48px}.eyebrow{display:inline-flex;align-items:center;gap:8px;margin:0 0 17px;color:var(--accent);font-size:.77rem;font-weight:750;letter-spacing:.16em;text-transform:uppercase}.eyebrow:before{content:"";width:24px;height:1px;background:currentColor}h1{max-width:680px;margin:0;font-size:clamp(2.4rem,6vw,4.7rem);line-height:1.03;letter-spacing:-.055em}.gradient{color:transparent;background:linear-gradient(100deg,var(--accent),#b6a1ff 75%);background-clip:text;-webkit-background-clip:text}.hero-copy{max-width:590px;margin:20px 0 0;color:var(--muted);font-size:1.08rem;line-height:1.7}.hero-mark{display:grid;width:clamp(104px,17vw,176px);aspect-ratio:1;place-items:center;border:1px solid var(--line);border-radius:34%;background:linear-gradient(145deg,rgba(115,225,255,.12),rgba(167,139,250,.1));box-shadow:0 25px 90px rgba(45,114,211,.13);transform:rotate(5deg)}.hero-mark img{width:70%;height:70%;object-fit:contain;border-radius:22%;cursor:pointer;transform:rotate(-5deg)}.library{padding:14px 0 76px}.library-head{display:flex;align-items:end;justify-content:space-between;gap:24px;margin-bottom:24px}.section-kicker{margin:0 0 7px;color:var(--muted);font-size:.8rem;font-weight:700;letter-spacing:.13em;text-transform:uppercase}h2{margin:0;font-size:clamp(1.55rem,3vw,2rem);letter-spacing:-.035em}.count{margin-left:9px;color:var(--muted);font-size:.9rem;font-weight:500}.search-wrap{position:relative;width:min(310px,42%)}.search-icon{position:absolute;top:50%;left:15px;color:var(--muted);transform:translateY(-50%)}.search{width:100%;padding:13px 15px 13px 43px;color:var(--text);border:1px solid var(--line);border-radius:14px;outline:none;background:rgba(19,26,46,.74)}.search::placeholder{color:#7885a4}.game-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px}.game-card{min-width:0;overflow:hidden;border:1px solid var(--line);border-radius:18px;background:var(--surface);box-shadow:0 12px 35px rgba(0,0,0,.15);transition:transform .22s,border-color .22s,box-shadow .22s}.game-card:hover{transform:translateY(-5px);border-color:rgba(115,225,255,.42);box-shadow:0 20px 45px rgba(0,0,0,.28)}.game-art{display:grid;aspect-ratio:16/10;overflow:hidden;place-items:center;background:linear-gradient(145deg,#1a2540,#101626)}.game-art img{width:100%;height:100%;object-fit:cover;transition:transform .35s}.game-card:hover .game-art img{transform:scale(1.045)}.fallback{color:rgba(115,225,255,.75);font-size:2.4rem;font-weight:800}.game-body{padding:17px}.game-title{min-height:2.8em;margin:0 0 15px;overflow-wrap:anywhere;font-size:1.05rem;line-height:1.4}.actions{display:flex;gap:9px}.btn{display:inline-flex;min-height:42px;flex:1;align-items:center;justify-content:center;padding:10px 12px;border:1px solid transparent;border-radius:11px;text-align:center;text-decoration:none;font-size:.88rem;font-weight:750;cursor:pointer}.primary{color:#07121c;background:linear-gradient(105deg,#80e8ff,#a9d8ff)}.secondary{color:var(--text);border-color:var(--line);background:rgba(255,255,255,.035)}.status{grid-column:1/-1;padding:50px 20px;color:var(--muted);text-align:center;border:1px dashed var(--line);border-radius:18px;line-height:1.7}.status strong{display:block;margin-bottom:6px;color:var(--text);font-size:1.05rem}.status button{margin-top:12px}footer{padding:26px 20px 34px;color:var(--muted);text-align:center;border-top:1px solid var(--line);font-size:.85rem}
+    .splash{position:fixed;z-index:20;inset:0;display:grid;place-items:center;padding:24px;background:radial-gradient(ellipse at center,#17233c 0%,#090d19 68%);transition:opacity .55s,visibility .55s}.splash.hidden{visibility:hidden;opacity:0;pointer-events:none}.splash-inner{display:flex;width:min(420px,100%);flex-direction:column;align-items:center;text-align:center;animation:intro .8s both}.logo-wrap{display:grid;width:158px;height:158px;margin-bottom:25px;place-items:center;border:1px solid rgba(115,225,255,.2);border-radius:38px;background:rgba(255,255,255,.035);box-shadow:0 0 75px rgba(115,225,255,.13);animation:float 3s ease-in-out infinite}.splash-logo{width:78%;height:78%;object-fit:contain;border-radius:24px;cursor:pointer}.splash-name{margin:0;font-size:1.8rem;font-weight:850;letter-spacing:.13em}.splash-subtitle{margin:10px 0 28px;color:var(--muted)}.splash-language{margin-bottom:16px}.continue{min-width:205px;padding:14px 22px;color:#07121c;border:0;border-radius:13px;background:linear-gradient(105deg,#80e8ff,#b5a2ff);box-shadow:0 10px 35px rgba(91,179,255,.2);cursor:pointer;font-weight:800}.continue:hover{transform:translateY(-2px)}@keyframes intro{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:none}}@keyframes float{50%{transform:translateY(-7px)}}
+    @media(max-width:650px){.topbar-inner,main{width:calc(100% - 30px)}.topbar-inner{min-height:66px}.hero{grid-template-columns:1fr;gap:24px;padding:56px 0 38px}.hero-mark{display:none}.library-head{align-items:stretch;flex-direction:column;gap:18px}.search-wrap{width:100%}.game-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr));gap:13px}}@media(max-width:390px){.brand span{font-size:.9rem}.brand img{width:36px;height:36px}.game-grid{grid-template-columns:1fr}}@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
   </style>
 </head>
 <body>
-  <div class="ambient one" aria-hidden="true"></div>
-  <div class="ambient two" aria-hidden="true"></div>
-
-  <section class="splash" id="splash" aria-label="MSM-GAMES intro">
-    <div class="splash-inner">
-      <div class="splash-logo-wrap"><img class="splash-logo" data-site-logo src="icon.png" alt="MSM-GAMES logo"></div>
-      <p class="splash-name">MSM-GAMES</p>
-      <p class="splash-subtitle" data-i18n="introSubtitle">Oyun dünyana hoş geldin.</p>
-      <select class="lang-select splash-language" data-language aria-label="Language">
-        <option value="tr">Türkçe</option><option value="en">English</option>
-      </select>
-      <button class="continue" id="continue-button" type="button" data-i18n="continue">DEVAM ET</button>
-    </div>
-  </section>
-
-  <header class="topbar">
-    <div class="topbar-inner">
-      <a class="brand" href="#home" aria-label="MSM-GAMES home">
-        <img data-site-logo src="icon.png" alt="">
-        <span>MSM-GAMES</span>
-      </a>
-      <select class="lang-select" data-language aria-label="Language">
-        <option value="tr">Türkçe</option><option value="en">English</option>
-      </select>
-    </div>
-  </header>
-
-  <main id="home">
-    <section class="hero">
-      <div>
-        <p class="eyebrow" data-i18n="eyebrow">Bağımsız oyun koleksiyonu</p>
-        <h1><span data-i18n="heroLine1">Oyununu bul.</span><br><span class="gradient-text" data-i18n="heroLine2">Dünyanı keşfet.</span></h1>
-        <p class="hero-copy" data-i18n="heroCopy">MSM-GAMES kütüphanesindeki oyunlara göz at, aradığını bul ve hemen oynamaya başla.</p>
-      </div>
-      <div class="hero-mark" aria-hidden="true"><img data-site-logo src="icon.png" alt=""></div>
-    </section>
-
-    <section class="library" aria-labelledby="library-heading">
-      <div class="library-head">
-        <div>
-          <p class="section-kicker" data-i18n="libraryKicker">Kütüphane</p>
-          <h2 id="library-heading"><span data-i18n="libraryTitle">Oyunlar</span><span class="count" id="game-count"></span></h2>
-        </div>
-        <label class="search-wrap">
-          <span class="search-icon" aria-hidden="true">⌕</span>
-          <input class="search" id="search" type="search" autocomplete="off" data-i18n-placeholder="searchPlaceholder" placeholder="Oyun ara...">
-        </label>
-      </div>
-      <div class="game-grid" id="game-grid" aria-live="polite">
-        <div class="status" id="status"><strong data-i18n="loadingTitle">Oyunlar yükleniyor</strong><span data-i18n="loadingText">GitHub kütüphanesine bağlanılıyor…</span></div>
-      </div>
-    </section>
-  </main>
-
-  <footer><p data-i18n="footer">© 2026 MSM-GAMES. Tüm hakları saklıdır.</p></footer>
-
+  <section class="splash" id="splash" aria-label="MSM-GAMES intro"><div class="splash-inner"><div class="logo-wrap"><img class="splash-logo" data-site-logo src="icon.png" alt="MSM-GAMES logo"></div><p class="splash-name">MSM-GAMES</p><p class="splash-subtitle" data-i18n="intro">Oyun dünyana hoş geldin.</p><select class="lang-select splash-language" data-language aria-label="Language"><option value="tr">Türkçe</option><option value="en">English</option></select><button class="continue" id="continue" data-i18n="continue">DEVAM ET</button></div></section>
+  <header class="topbar"><div class="topbar-inner"><a class="brand" href="#home" aria-label="MSM-GAMES home"><img data-site-logo src="icon.png" alt=""><span>MSM-GAMES</span></a><select class="lang-select" data-language aria-label="Language"><option value="tr">Türkçe</option><option value="en">English</option></select></div></header>
+  <main id="home"><section class="hero"><div><p class="eyebrow" data-i18n="eyebrow">Bağımsız oyun koleksiyonu</p><h1><span data-i18n="line1">Oyununu bul.</span><br><span class="gradient" data-i18n="line2">Dünyanı keşfet.</span></h1><p class="hero-copy" data-i18n="heroCopy">MSM-GAMES kütüphanesindeki oyunlara göz at, aradığını bul ve hemen oynamaya başla.</p></div><div class="hero-mark"><img data-site-logo src="icon.png" alt="MSM-GAMES logo"></div></section>
+    <section class="library"><div class="library-head"><div><p class="section-kicker" data-i18n="kicker">Kütüphane</p><h2><span data-i18n="gamesTitle">Oyunlar</span><span class="count" id="count"></span></h2></div><label class="search-wrap"><span class="search-icon" aria-hidden="true">⌕</span><input class="search" id="search" type="search" autocomplete="off" data-placeholder placeholder="Oyun ara..."></label></div><div class="game-grid" id="game-grid" aria-live="polite"></div></section>
+  </main><footer><span data-i18n="footer">© 2026 MSM-GAMES. Tüm hakları saklıdır.</span></footer>
   <script>
-    (() => {
+    (()=>{
       'use strict';
-      const OWNER = 'blatzz92';
-      const REPO = 'MSM-GAMES';
-      const BRANCH = 'main';
-      const API_ROOT = `https://api.github.com/repos/${OWNER}/${REPO}`;
-      const RAW_ROOT = `https://raw.githubusercontent.com/${OWNER}/${REPO}/${BRANCH}`;
-      const ui = {
-        splash: document.getElementById('splash'),
-        grid: document.getElementById('game-grid'),
-        search: document.getElementById('search'),
-        count: document.getElementById('game-count'),
-        continue: document.getElementById('continue-button')
+      const OWNER='blatzz92',REPO='MSM-GAMES',BRANCH='main';
+      const API=`https://api.github.com/repos/${OWNER}/${REPO}`;
+      const RAW=`https://raw.githubusercontent.com/${OWNER}/${REPO}/${BRANCH}`;
+      // GitHub Pages serves HTML as a web page; raw.githubusercontent.com serves it as plain text.
+      const PAGES='https://blatzz92.github.io/MSM-GAMES';
+      const SECRET_GAME=`${PAGES}/games/e-s/gizli-oyun.html`;
+      const strings={
+        tr:{intro:'Oyun dünyana hoş geldin.',continue:'DEVAM ET',eyebrow:'Bağımsız oyun koleksiyonu',line1:'Oyununu bul.',line2:'Dünyanı keşfet.',heroCopy:'MSM-GAMES kütüphanesindeki oyunlara göz at, aradığını bul ve hemen oynamaya başla.',kicker:'Kütüphane',gamesTitle:'Oyunlar',placeholder:'Oyun ara...',loading:'Oyunlar yükleniyor…',empty:'Games klasöründe gösterilecek bir HTML oyunu bulunamadı.',noResults:'Sonuç bulunamadı. Başka bir oyun adıyla ara.',error:'Oyunlar yüklenemedi. GitHub API erişimini kontrol edip yeniden dene.',retry:'Yeniden dene',play:'Oyna',translate:'Çeviriyle aç',footer:'© 2026 MSM-GAMES. Tüm hakları saklıdır.',count:n=>`${n} oyun`,warning:'Google Translate bazı oyunları düzgün çalıştırmayabilir.'},
+        en:{intro:'Welcome to your gaming world.',continue:'CONTINUE',eyebrow:'Independent game collection',line1:'Find your game.',line2:'Explore your world.',heroCopy:'Browse the games in the MSM-GAMES library, find what you like, and start playing.',kicker:'Library',gamesTitle:'Games',placeholder:'Search games...',loading:'Loading games…',empty:'No HTML games were found in the games folder.',noResults:'No results found. Try a different game name.',error:'Could not load games. Check GitHub API access and try again.',retry:'Try again',play:'Play',translate:'Open translated',footer:'© 2026 MSM-GAMES. All rights reserved.',count:n=>`${n} games`,warning:'Google Translate may not work correctly with some games.'}
       };
-      const text = {
-        tr: {
-          introSubtitle: 'Oyun dünyana hoş geldin.', continue: 'DEVAM ET', eyebrow: 'Bağımsız oyun koleksiyonu',
-          heroLine1: 'Oyununu bul.', heroLine2: 'Dünyanı keşfet.',
-          heroCopy: 'MSM-GAMES kütüphanesindeki oyunlara göz at, aradığını bul ve hemen oynamaya başla.',
-          libraryKicker: 'Kütüphane', libraryTitle: 'Oyunlar', searchPlaceholder: 'Oyun ara...',
-          loadingTitle: 'Oyunlar yükleniyor', loadingText: 'GitHub kütüphanesine bağlanılıyor…',
-          emptyTitle: 'Henüz oyun yok', emptyText: 'Games klasöründe gösterilecek bir HTML oyunu bulunamadı.',
-          noResultsTitle: 'Sonuç bulunamadı', noResultsText: 'Başka bir oyun adıyla aramayı dene.',
-          errorTitle: 'Oyunlar yüklenemedi', errorText: 'GitHub API erişimini kontrol edip yeniden deneyebilirsin.', retry: 'Yeniden dene',
-          play: 'Oyna', translate: 'Çeviriyle aç', footer: '© 2026 MSM-GAMES. Tüm hakları saklıdır.',
-          gameCount: n => `${n} oyun`, gameAlt: name => `${name} oyun ikonu`,
-          translateWarning: 'Google Translate sayfası açılacak. Bazı oyunlar bu şekilde düzgün çalışmayabilir.'
-        },
-        en: {
-          introSubtitle: 'Welcome to your gaming world.', continue: 'CONTINUE', eyebrow: 'Independent game collection',
-          heroLine1: 'Find your game.', heroLine2: 'Explore your world.',
-          heroCopy: 'Browse the games in the MSM-GAMES library, find what you like, and start playing.',
-          libraryKicker: 'Library', libraryTitle: 'Games', searchPlaceholder: 'Search games...',
-          loadingTitle: 'Loading games', loadingText: 'Connecting to the GitHub library…',
-          emptyTitle: 'No games yet', emptyText: 'No HTML games were found in the games folder.',
-          noResultsTitle: 'No results found', noResultsText: 'Try searching for a different game name.',
-          errorTitle: 'Could not load games', errorText: 'Check GitHub API access and try again.', retry: 'Try again',
-          play: 'Play', translate: 'Open translated', footer: '© 2026 MSM-GAMES. All rights reserved.',
-          gameCount: n => `${n} games`, gameAlt: name => `${name} game icon`,
-          translateWarning: 'This opens Google Translate. Some games may not work correctly through it.'
-        }
-      };
-      let language = localStorage.getItem('msm_lang') === 'en' ? 'en' : 'tr';
-      let games = [];
-
-      function escapeHTML(value) {
-        return String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
-      }
-      function normalize(value) {
-        return value.toLocaleLowerCase(language === 'tr' ? 'tr-TR' : 'en-US').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-      }
-      function setLanguage(nextLanguage) {
-        language = nextLanguage === 'en' ? 'en' : 'tr';
-        localStorage.setItem('msm_lang', language);
-        document.documentElement.lang = language;
-        document.querySelectorAll('[data-language]').forEach(select => { select.value = language; });
-        document.querySelectorAll('[data-i18n]').forEach(node => {
-          const key = node.dataset.i18n;
-          if (text[language][key]) node.textContent = text[language][key];
-        });
-        document.querySelectorAll('[data-i18n-placeholder]').forEach(node => {
-          node.placeholder = text[language][node.dataset.i18nPlaceholder] || '';
-        });
-        if (games.length) renderGames();
-      }
-      document.querySelectorAll('[data-language]').forEach(select => select.addEventListener('change', () => setLanguage(select.value)));
-
-      function makeStatus(title, message, retry = false) {
-        ui.grid.replaceChildren();
-        const box = document.createElement('div');
-        box.className = 'status';
-        const heading = document.createElement('strong');
-        heading.textContent = title;
-        const description = document.createElement('span');
-        description.textContent = message;
-        box.append(heading, description);
-        if (retry) {
-          const button = document.createElement('button');
-          button.className = 'btn btn-secondary';
-          button.type = 'button';
-          button.textContent = text[language].retry;
-          button.addEventListener('click', loadGames);
-          box.append(button);
-        }
-        ui.grid.append(box);
-      }
-
-      async function loadLogo() {
-        try {
-          const response = await fetch(`${API_ROOT}/contents/icon.png`, { headers: { Accept: 'application/vnd.github+json' } });
-          if (!response.ok) throw new Error('Logo API request failed');
-          const file = await response.json();
-          const logoURL = file.download_url || `${RAW_ROOT}/icon.png`;
-          document.querySelectorAll('[data-site-logo]').forEach(image => { image.src = logoURL; });
-        } catch (error) {
-          // icon.png relative path remains as a local fallback if the API is unavailable.
-          console.warn('MSM-GAMES logo could not be loaded from GitHub API.', error);
-        }
-      }
-
-      async function loadGames() {
-        makeStatus(text[language].loadingTitle, text[language].loadingText);
-        try {
-          const response = await fetch(`${API_ROOT}/contents/games?ref=${encodeURIComponent(BRANCH)}`, {
-            headers: { Accept: 'application/vnd.github+json' }
-          });
-          if (!response.ok) throw new Error(`GitHub API returned ${response.status}`);
-          const files = await response.json();
-          if (!Array.isArray(files)) throw new Error('Unexpected GitHub API response');
-          const imageByStem = new Map();
-          files.filter(file => file.type === 'file' && /\.png$/i.test(file.name)).forEach(file => {
-            imageByStem.set(file.name.replace(/\.png$/i, '').toLocaleLowerCase(), file.download_url || `${RAW_ROOT}/games/${encodeURIComponent(file.name)}`);
-          });
-          games = files
-            .filter(file => file.type === 'file' && /\.html$/i.test(file.name))
-            .map(file => {
-              const stem = file.name.replace(/\.html$/i, '');
-              const encodedPath = file.path.split('/').map(encodeURIComponent).join('/');
-              return {
-                title: stem.replace(/[-_]+/g, ' ').trim(),
-                url: `${RAW_ROOT}/${encodedPath}`,
-                image: imageByStem.get(stem.toLocaleLowerCase()) || '',
-                stem
-              };
-            })
-            .sort((a, b) => a.title.localeCompare(b.title, language === 'tr' ? 'tr' : 'en'));
-          renderGames();
-        } catch (error) {
-          console.error('Could not load games from GitHub API.', error);
-          games = [];
-          makeStatus(text[language].errorTitle, text[language].errorText, true);
-        }
-      }
-
-      function renderGames() {
-        const query = normalize(ui.search.value.trim());
-        const filtered = games.filter(game => normalize(game.title).includes(query));
-        ui.count.textContent = games.length ? `· ${text[language].gameCount(games.length)}` : '';
-        ui.grid.replaceChildren();
-        if (!games.length) {
-          makeStatus(text[language].emptyTitle, text[language].emptyText);
-          return;
-        }
-        if (!filtered.length) {
-          makeStatus(text[language].noResultsTitle, text[language].noResultsText);
-          return;
-        }
-        const fragment = document.createDocumentFragment();
-        filtered.forEach(game => {
-          const card = document.createElement('article');
-          card.className = 'game-card';
-          const art = document.createElement('div');
-          art.className = 'game-art';
-          if (game.image) {
-            const image = document.createElement('img');
-            image.src = game.image;
-            image.alt = text[language].gameAlt(game.title);
-            image.loading = 'lazy';
-            image.onerror = () => {
-              image.remove();
-              const fallback = document.createElement('span');
-              fallback.className = 'game-art-fallback';
-              fallback.setAttribute('aria-hidden', 'true');
-              fallback.textContent = game.title.slice(0, 1).toUpperCase();
-              art.append(fallback);
-            };
-            art.append(image);
-          } else {
-            const fallback = document.createElement('span');
-            fallback.className = 'game-art-fallback';
-            fallback.setAttribute('aria-hidden', 'true');
-            fallback.textContent = game.title.slice(0, 1).toUpperCase();
-            art.append(fallback);
-          }
-          const body = document.createElement('div');
-          body.className = 'game-body';
-          const title = document.createElement('h3');
-          title.className = 'game-title';
-          title.textContent = game.title;
-          const actions = document.createElement('div');
-          actions.className = 'card-actions';
-          const play = document.createElement('a');
-          play.className = 'btn btn-primary';
-          play.href = `${game.url}?lang=${language}`;
-          play.target = '_blank';
-          play.rel = 'noopener noreferrer';
-          play.textContent = text[language].play;
-          const translate = document.createElement('a');
-          translate.className = 'btn btn-secondary';
-          translate.href = `https://translate.google.com/translate?sl=auto&tl=${language}&u=${encodeURIComponent(game.url)}`;
-          translate.target = '_blank';
-          translate.rel = 'noopener noreferrer';
-          translate.title = text[language].translateWarning;
-          translate.textContent = text[language].translate;
-          actions.append(play, translate);
-          body.append(title, actions);
-          card.append(art, body);
-          fragment.append(card);
-        });
-        ui.grid.append(fragment);
-      }
-
-      document.getElementById('continue-button').addEventListener('click', () => {
-        ui.splash.classList.add('is-hidden');
-        try { sessionStorage.setItem('msm_intro_seen', '1'); } catch (_) { /* storage may be disabled */ }
-      });
-      ui.search.addEventListener('input', renderGames);
-      setLanguage(language);
-      try {
-        if (sessionStorage.getItem('msm_intro_seen') === '1') ui.splash.classList.add('is-hidden');
-      } catch (_) { /* keep intro visible if storage is disabled */ }
-      loadLogo();
-      loadGames();
+      const grid=document.getElementById('game-grid'),search=document.getElementById('search'),count=document.getElementById('count');
+      let lang=localStorage.getItem('msm_lang')==='en'?'en':'tr',games=[];
+      function setLanguage(next){lang=next==='en'?'en':'tr';localStorage.setItem('msm_lang',lang);document.documentElement.lang=lang;document.querySelectorAll('[data-language]').forEach(x=>x.value=lang);document.querySelectorAll('[data-i18n]').forEach(x=>x.textContent=strings[lang][x.dataset.i18n]);search.placeholder=strings[lang].placeholder;if(games.length)render();}
+      document.querySelectorAll('[data-language]').forEach(x=>x.addEventListener('change',()=>setLanguage(x.value)));
+      function status(message,withRetry=false){grid.replaceChildren();const box=document.createElement('div');box.className='status';const strong=document.createElement('strong');strong.textContent=message;box.append(strong);if(withRetry){const button=document.createElement('button');button.className='btn secondary';button.textContent=strings[lang].retry;button.addEventListener('click',loadGames);box.append(button);}grid.append(box);}
+      async function loadLogo(){try{const response=await fetch(`${API}/contents/icon.png`,{headers:{Accept:'application/vnd.github+json'}});if(!response.ok)throw Error('Logo API error');const file=await response.json();document.querySelectorAll('[data-site-logo]').forEach(img=>img.src=file.download_url||`${RAW}/icon.png`);}catch(error){console.warn('Logo API unavailable; using local icon.',error);}}
+      async function loadGames(){status(strings[lang].loading);try{const response=await fetch(`${API}/contents/games?ref=${BRANCH}`,{headers:{Accept:'application/vnd.github+json'}});if(!response.ok)throw Error(`GitHub API ${response.status}`);const files=await response.json();if(!Array.isArray(files))throw Error('Unexpected API result');const icons=new Map(files.filter(f=>f.type==='file'&&/\.png$/i.test(f.name)).map(f=>[f.name.replace(/\.png$/i,'').toLocaleLowerCase(),f.download_url]));games=files.filter(f=>f.type==='file'&&/\.html$/i.test(f.name)).map(f=>{const stem=f.name.replace(/\.html$/i,'');const path=f.path.split('/').map(encodeURIComponent).join('/');return{title:stem.replace(/[-_]+/g,' ').trim(),url:`${PAGES}/${path}`,image:icons.get(stem.toLocaleLowerCase())||''};}).sort((a,b)=>a.title.localeCompare(b.title,lang==='tr'?'tr':'en'));render();}catch(error){console.error('Could not load games',error);games=[];status(strings[lang].error,true);}}
+      function render(){const q=search.value.trim().toLocaleLowerCase(lang==='tr'?'tr-TR':'en-US');const found=games.filter(g=>g.title.toLocaleLowerCase(lang==='tr'?'tr-TR':'en-US').includes(q));count.textContent=games.length?`· ${strings[lang].count(games.length)}`:'';grid.replaceChildren();if(!games.length){status(strings[lang].empty);return;}if(!found.length){status(strings[lang].noResults);return;}const frag=document.createDocumentFragment();found.forEach(game=>{const card=document.createElement('article');card.className='game-card';const art=document.createElement('div');art.className='game-art';if(game.image){const img=document.createElement('img');img.src=game.image;img.alt=`${game.title} icon`;img.loading='lazy';img.onerror=()=>{img.remove();const fallback=document.createElement('span');fallback.className='fallback';fallback.textContent=game.title.slice(0,1).toUpperCase();art.append(fallback);};art.append(img);}else{const fallback=document.createElement('span');fallback.className='fallback';fallback.textContent=game.title.slice(0,1).toUpperCase();art.append(fallback);}const body=document.createElement('div');body.className='game-body';const title=document.createElement('h3');title.className='game-title';title.textContent=game.title;const actions=document.createElement('div');actions.className='actions';const play=document.createElement('a');play.className='btn primary';play.href=`${game.url}?lang=${lang}`;play.target='_blank';play.rel='noopener noreferrer';play.textContent=strings[lang].play;const translate=document.createElement('a');translate.className='btn secondary';translate.href=`https://translate.google.com/translate?sl=auto&tl=${lang}&u=${encodeURIComponent(game.url)}`;translate.target='_blank';translate.rel='noopener noreferrer';translate.title=strings[lang].warning;translate.textContent=strings[lang].translate;actions.append(play,translate);body.append(title,actions);card.append(art,body);frag.append(card);});grid.append(frag);}
+      // Count all clicks on the MSM-GAMES logos during this page visit. The 25th opens the secret game.
+      let logoClicks=0;document.querySelectorAll('[data-site-logo]').forEach(logo=>logo.addEventListener('click',event=>{event.preventDefault();logoClicks+=1;if(logoClicks>=25)window.location.href=`${SECRET_GAME}?lang=${lang}`;}));
+      document.getElementById('continue').addEventListener('click',()=>{document.getElementById('splash').classList.add('hidden');try{sessionStorage.setItem('msm_intro_seen','1');}catch(_){}});
+      search.addEventListener('input',render);setLanguage(lang);try{if(sessionStorage.getItem('msm_intro_seen')==='1')document.getElementById('splash').classList.add('hidden');}catch(_){}loadLogo();loadGames();
     })();
   </script>
 </body>
