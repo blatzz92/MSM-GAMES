@@ -1,0 +1,1584 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dünya Futbol Menajeri 26 / World Football Manager 26</title>
+    <style>
+        :root {
+            --primary: #059669;
+            --primary-dark: #047857;
+            --bg-dark: #070a12;
+            --bg-card: #111827;
+            --bg-card-hover: #1f2937;
+            --text-main: #f9fafb;
+            --text-muted: #9ca3af;
+            --border: #1f2937;
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; user-select: none; }
+        body { background-color: var(--bg-dark); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
+        
+        /* ARMOR GAMES TARZI AÇILIŞ EKRANI STİLLERİ */
+        #armor-splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #0b0f19;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.6s ease;
+        }
+        .armor-logo-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            animation: armorPulse 2s infinite ease-in-out;
+        }
+        .armor-logo-img {
+            width: 160px;
+            height: auto;
+            filter: drop-shadow(0 0 20px rgba(5, 150, 105, 0.4));
+        }
+        .armor-brand-text {
+            font-size: 1.1rem;
+            letter-spacing: 3px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        .armor-loader-bar-bg {
+            width: 220px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 20px;
+            border: 1px solid var(--border);
+        }
+        .armor-loader-bar-fill {
+            width: 0%;
+            height: 100%;
+            background: var(--primary);
+            transition: width 0.2s linear;
+        }
+        .armor-start-btn {
+            margin-top: 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 28px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: none;
+            box-shadow: 0 4px 15px rgba(5, 150, 105, 0.4);
+            transition: transform 0.2s, background 0.2s;
+        }
+        .armor-start-btn:hover {
+            background: var(--primary-dark);
+            transform: scale(1.05);
+        }
+        @keyframes armorPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+
+        header { background: var(--bg-card); border-bottom: 1px solid var(--border); padding: 8px 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+        .logo { font-size: 0.95rem; font-weight: bold; color: var(--primary); display: flex; align-items: center; gap: 6px; }
+        .header-stats { display: flex; gap: 8px; font-size: 0.78rem; align-items: center; }
+        .stat-badge { background: var(--bg-dark); padding: 3px 8px; border-radius: 12px; border: 1px solid var(--border); display: flex; align-items: center; gap: 4px; }
+        .lang-select-header { background: var(--bg-dark); color: var(--text-main); border: 1px solid var(--primary); border-radius: 6px; padding: 2px 6px; font-size: 0.75rem; font-weight: bold; cursor: pointer; }
+        main { flex: 1; padding: 12px; max-width: 1250px; width: 100%; margin: 0 auto; margin-bottom: 60px; }
+        .screen { display: none; animation: fadeIn 0.15s ease; }
+        .screen.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: translateY(0); } }
+        h2 { margin-bottom: 10px; font-size: 1.15rem; color: var(--text-main); border-left: 4px solid var(--primary); padding-left: 8px; }
+        .filter-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+        select, input[type="text"] { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-main); padding: 7px 10px; border-radius: 6px; font-size: 0.8rem; outline: none; }
+        select:focus, input[type="text"]:focus { border-color: var(--primary); }
+        .league-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 10px; }
+        .team-select-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; max-height: 480px; overflow-y: auto; padding-right: 4px; }
+        .team-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 12px; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; gap: 6px; }
+        .team-card:hover { border-color: var(--primary); background: var(--bg-card-hover); }
+        .btn { background: var(--primary); color: white; border: none; padding: 7px 12px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 5px; font-size: 0.8rem; text-decoration: none; }
+        .btn:hover { background: var(--primary-dark); }
+        .btn-block { width: 100%; }
+        .btn-secondary { background: var(--bg-card-hover); border: 1px solid var(--border); color: var(--text-main); white-space: nowrap; }
+        .btn-secondary.active-tab { background: var(--primary); border-color: var(--primary); color: white; }
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        @media(max-width: 700px) { .dashboard-grid { grid-template-columns: 1fr; } }
+        .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
+        .card h3 { font-size: 0.9rem; margin-bottom: 6px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .next-match-box { text-align: center; padding: 10px; background: var(--bg-dark); border-radius: 6px; border: 1px solid var(--border); margin-top: 4px; }
+        
+        .squad-layout { display: grid; grid-template-columns: 1fr 1.4fr; gap: 12px; }
+        @media(max-width: 900px) { .squad-layout { grid-template-columns: 1fr; } }
+        .player-list { display: flex; flex-direction: column; gap: 5px; max-height: 460px; overflow-y: auto; padding-right: 4px; }
+        .player-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; gap: 8px; }
+        .player-details { display: flex; align-items: center; gap: 8px; flex: 1; }
+        .player-pos { background: var(--bg-dark); padding: 2px 5px; border-radius: 4px; font-size: 0.65rem; font-weight: bold; color: var(--primary); border: 1px solid var(--border); width: 40px; text-align: center; flex-shrink: 0; }
+        .player-ovr { background: var(--primary); color: white; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.75rem; flex-shrink: 0; }
+        
+        .status-badge { display: inline-block; padding: 1px 5px; border-radius: 4px; font-size: 0.64rem; font-weight: 600; margin-left: 4px; }
+        .status-free { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4); }
+        .status-listed { background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.4); }
+        .status-loan { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); }
+        .status-contract { background: rgba(156, 163, 175, 0.15); color: #9ca3af; border: 1px solid rgba(156, 163, 175, 0.3); }
+
+        .tactics-board { background: linear-gradient(135deg, #144434 0%, #0a241b 100%); border: 3px solid #1e4d3d; border-radius: 10px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; min-height: 440px; position: relative; box-shadow: inset 0 0 25px rgba(0,0,0,0.6); }
+        .tactics-board::before { content: ''; position: absolute; top: 0; left: 50%; width: 2px; height: 100%; background: rgba(255,255,255,0.15); transform: translateX(-50%); pointer-events: none; }
+        .tactics-board::after { content: ''; position: absolute; top: 50%; left: 50%; width: 80px; height: 80px; border: 2px solid rgba(255,255,255,0.15); border-radius: 50%; transform: translate(-50%, -50%); pointer-events: none; }
+        .pitch-line-box-left { position: absolute; top: 50%; left: 0; width: 45px; height: 120px; border: 2px solid rgba(255,255,255,0.15); border-left: none; transform: translateY(-50%); pointer-events: none; }
+        .pitch-line-box-right { position: absolute; top: 50%; right: 0; width: 45px; height: 120px; border: 2px solid rgba(255,255,255,0.15); border-right: none; transform: translateY(-50%); pointer-events: none; }
+
+        .pitch-col { display: flex; flex-direction: column; justify-content: space-around; height: 100%; z-index: 2; align-items: center; }
+        .pitch-formation-container { display: flex; justify-content: space-around; align-items: center; width: 100%; height: 100%; z-index: 2; min-height: 400px; }
+        
+        .pitch-player-node { background: rgba(13, 19, 33, 0.92); border: 2px solid var(--primary); border-radius: 6px; padding: 5px 6px; width: 82px; text-align: center; cursor: pointer; transition: all 0.2s; box-shadow: 0 3px 5px rgba(0,0,0,0.4); }
+        .pitch-player-node:hover { transform: scale(1.06); border-color: var(--warning); background: rgba(30, 41, 59, 0.98); }
+        .pitch-player-node .pos-badge { font-size: 0.6rem; color: var(--warning); font-weight: bold; text-transform: uppercase; }
+        .pitch-player-node .name-badge { font-size: 0.68rem; font-weight: bold; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+        .pitch-player-node .ovr-badge { font-size: 0.6rem; color: #10b981; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 0.76rem; }
+        th, td { padding: 6px 5px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { color: var(--text-muted); font-weight: 600; }
+        tr:hover td { background: var(--bg-card-hover); }
+        .match-container { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 15px; text-align: center; }
+        .match-scoreboard { display: flex; justify-content: space-around; align-items: center; margin: 10px 0; font-size: 1.05rem; font-weight: bold; }
+        .match-score { font-size: 1.8rem; background: var(--bg-dark); padding: 5px 14px; border-radius: 8px; border: 1px solid var(--border); color: var(--primary); }
+        .match-commentary { background: var(--bg-dark); border: 1px solid var(--border); border-radius: 6px; padding: 8px; height: 120px; overflow-y: auto; text-align: left; font-size: 0.78rem; display: flex; flex-direction: column; gap: 4px; margin: 10px 0; }
+        .commentary-item { padding: 3px 5px; border-radius: 3px; background: rgba(255,255,255,0.03); }
+        nav.bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--bg-card); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 6px 0; z-index: 100; }
+        .nav-item { background: none; border: none; color: var(--text-muted); font-size: 0.65rem; display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; transition: color 0.2s; }
+        .nav-item.active { color: var(--primary); }
+        .nav-item svg { width: 18px; height: 18px; fill: currentColor; }
+        .toast { position: fixed; top: 12px; right: 12px; background: var(--primary); color: white; padding: 8px 14px; border-radius: 6px; box-shadow: 0 4px 10px rgba(0,0,0,0.4); z-index: 3000; display: none; font-size: 0.82rem; font-weight: 600; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.78); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-content { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; width: 92%; max-width: 430px; max-height: 82vh; display: flex; flex-direction: column; gap: 8px; }
+    </style>
+</head>
+<body>
+    <!-- ARMOR GAMES TARZI AÇILIŞ / YÜKLENME EKRANI -->
+    <div id="armor-splash-screen">
+        <div class="armor-logo-wrapper">
+            <img src="Dünya Futbol Menajeri 26.png" alt="MSM Club Logo" class="armor-logo-img">
+            <div class="armor-brand-text">MSM-GAMES</div>
+            <div class="armor-loader-bar-bg">
+                <div id="armor-bar-fill" class="armor-loader-bar-fill"></div>
+            </div>
+            <div id="armor-loading-text" style="font-size: 0.78rem; color: var(--text-muted);">Yükleniyor... %0</div>
+        </div>
+        <button id="armor-start-btn" class="armor-start-btn" onclick="startTheGameFromSplash()">OYUNA BAŞLA</button>
+    </div>
+
+    <header id="app-header" style="display: none;">
+        <div class="logo">⚽ <span id="header-team-name">Takım</span></div>
+        <div class="header-stats">
+            <div class="stat-badge">💰 <span id="header-budget">0.3</span>M €</div>
+            <div class="stat-badge">🏆 <span id="header-points">0</span> <span data-i18n="pts">P</span></div>
+            <div class="stat-badge">📅 <span data-i18n="header_wk">H.</span><span id="header-week">1</span>/38</div>
+            <select class="lang-select-header" id="lang-select" onchange="changeLanguage(this.value)">
+                <option value="tr">🇹🇷 TR</option>
+                <option value="en">🇬🇧 EN</option>
+            </select>
+        </div>
+    </header>
+    <main>
+        <div id="screen-team-select" class="screen active">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <h2 data-i18n="title_team_select">Dünya Futbol Menajeri 2026 Sezonu</h2>
+                <select class="lang-select-header" id="lang-select-menu" onchange="changeLanguage(this.value)">
+                    <option value="tr">🇹🇷 Türkçe</option>
+                    <option value="en">🇬🇧 English</option>
+                </select>
+            </div>
+            <p style="color: var(--text-muted); margin-bottom: 8px; font-size: 0.8rem;" data-i18n="desc_team_select">2026/27 güncel ligler ve kadrolar! Tüm takımlar 38 haftalık fikstürde eşzamanlı maç yapar. Transfer listesi, kiralıklar ve bonservisi elinde onlarca gerçek oyuncu seni bekliyor!</p>
+            <div id="load-game-container" style="margin-bottom: 10px; display: none;">
+                <button class="btn" style="background: var(--warning); color: #000; width: 100%; margin-bottom: 4px;" onclick="playSound('click'); loadGame()" data-i18n="btn_continue">💾 Kayıtlı Kariyere Devam Et</button>
+            </div>
+            <div class="filter-bar">
+                <select id="country-select" onchange="onCountryChange()" style="min-width: 170px; font-weight: bold;">
+                    <option value="Türkiye">🇹🇷 Türkiye (2026/27)</option>
+                    <option value="İngiltere">🏴󠁧󠁢󠁥󠁮󠁧󠁿 İngiltere (2026/27)</option>
+                    <option value="İspanya">🇪🇸 İspanya (2026/27)</option>
+                    <option value="İtalya">🇮🇹 İtalya (2026/27)</option>
+                    <option value="Almanya">🇩🇪 Almanya (2026/27)</option>
+                    <option value="Fransa">🇫🇷 Fransa (2026/27)</option>
+                    <option value="Portekiz">🇵🇹 Portekiz (2026/27)</option>
+                    <option value="Hollanda">🇳🇱 Hollanda (2026/27)</option>
+                    <option value="Belçika">🇧🇪 Belçika (2026/27)</option>
+                    <option value="İskoçya">🏴󠁧󠁢󠁳󠁣󠁴󠁿 İskoçya (2026/27)</option>
+                    <option value="Avusturya">🇦🇹 Avusturya (2026/27)</option>
+                    <option value="İsviçre">🇨🇭 İsviçre (2026/27)</option>
+                    <option value="Yunanistan">🇬🇷 Yunanistan (2026/27)</option>
+                    <option value="Danimarka">🇩🇰 Danimarka (2026/27)</option>
+                    <option value="Norveç">🇳🇴 Norveç (2026/27)</option>
+                    <option value="İsveç">🇸🇪 İsveç (2026/27)</option>
+                    <option value="Polonya">🇵🇱 Polonya (2026/27)</option>
+                    <option value="Çekya">🇨🇿 Çekya (2026/27)</option>
+                    <option value="Hırvatistan">🇭🇷 Hırvatistan (2026/27)</option>
+                    <option value="Sırbistan">🇷🇸 Sırbistan (2026/27)</option>
+                    <option value="Ukrayna">🇺🇦 Ukrayna (2026/27)</option>
+                    <option value="Romanya">🇷🇴 Romanya (2026/27)</option>
+                </select>
+                <input type="text" id="team-search-input" placeholder="Takım ara (Örn: Niğde, Fenerbahçe, Galatasaray)..." oninput="renderTeamSelect()" style="flex: 1; min-width: 150px;" data-i18n-ph="ph_search_team">
+            </div>
+            <div class="league-tabs" id="league-tabs-container"></div>
+            <div class="team-select-grid" id="team-list-container"></div>
+        </div>
+
+        <div id="screen-dashboard" class="screen">
+            <h2 data-i18n="title_dashboard">Yönetim Paneli (2026/27 Sezonu — 38 Hafta)</h2>
+            <div class="dashboard-grid">
+                <div class="card">
+                    <h3 data-i18n="next_match">Sıradaki Lig Maçı</h3>
+                    <div class="next-match-box">
+                        <div style="font-size: 0.75rem; color: var(--text-muted);" id="dashboard-match-week">Hafta 1 / 38</div>
+                        <div style="font-size: 1rem; font-weight: bold; margin: 6px 0;" id="dashboard-match-fixture">Takım vs Rakip</div>
+                        <button class="btn btn-block" id="btn-play-match" onclick="playSound('click'); startMatch()" data-i18n="play_match">Maça Çık</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3 data-i18n="club_info">Kulüp & Sezon Bilgileri</h3>
+                    <div style="display: flex; flex-direction: column; gap: 5px; margin-top: 4px; font-size: 0.78rem;">
+                        <div style="display: flex; justify-content: space-between;"><span data-i18n="country_league">Ülke / Lig:</span> <strong id="info-league">Lig</strong></div>
+                        <div style="display: flex; justify-content: space-between;"><span data-i18n="season_status">Sezon Durumu:</span> <strong style="color: var(--warning);" id="info-europe-target">Şampiyonluk Yarışı</strong></div>
+                        <div style="display: flex; justify-content: space-between;"><span data-i18n="transfer_budget">Transfer Bütçesi:</span> <strong id="info-budget">0.3M €</strong></div>
+                        <div style="display: flex; justify-content: space-between;"><span data-i18n="youth_academy">Altyapı Akademisi:</span> <strong id="info-academy-status" style="color: var(--success);">Aktif</strong></div>
+                        <button class="btn btn-block btn-secondary" style="margin-top: 4px;" onclick="playSound('click'); saveAndExit()" data-i18n="btn_save_exit">💾 Kaydet ve Menüye Dön</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="screen-squad" class="screen">
+            <h2 data-i18n="title_squad">2026/27 Kadro ve Taktik</h2>
+            <div class="filter-bar" style="align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <span style="font-size: 0.8rem; color: var(--text-muted);" data-i18n="formation">Diziliş:</span>
+                    <select id="formation-select" onchange="changeFormation(this.value)">
+                        <option value="4-3-3">4-3-3 (Klasik)</option>
+                        <option value="4-2-3-1">4-2-3-1 (Modern / Ofansif)</option>
+                        <option value="4-4-2">4-4-2 (Dengeli)</option>
+                        <option value="4-1-4-1">4-1-4-1 (Kontrollü)</option>
+                        <option value="3-5-2">3-5-2 (Ofansif)</option>
+                        <option value="3-4-3">3-4-3 (Tam Hücum)</option>
+                        <option value="5-3-2">5-3-2 (Katı Savunma)</option>
+                        <option value="5-4-1">5-4-1 (Otobüs Park Et)</option>
+                    </select>
+                </div>
+                <button class="btn" style="background: var(--primary);" onclick="playSound('click'); saveGameProgress()" data-i18n="quick_save">Anlık Kaydet</button>
+            </div>
+            <div class="squad-layout">
+                <div>
+                    <h3 style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px;" data-i18n="squad_list_title">Geniş Kadro (11'e atamak için tıkla)</h3>
+                    <div class="player-list" id="squad-list-container"></div>
+                </div>
+                <div>
+                    <h3 style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px;" data-i18n="starting_11">İlk 11 Taktik Sahası</h3>
+                    <div class="tactics-board" id="tactics-pitch">
+                        <div class="pitch-line-box-left"></div>
+                        <div class="pitch-line-box-right"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="screen-standings" class="screen">
+            <h2 data-i18n="title_standings">2026/27 Puan Durumu (38 Haftalık Lig)</h2>
+            <div class="card" style="padding: 4px; overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr><th>#</th><th data-i18n="th_team">Takım</th><th data-i18n="th_p">O</th><th data-i18n="th_w">G</th><th data-i18n="th_d">B</th><th data-i18n="th_l">M</th><th>AG</th><th>YG</th><th>AV</th><th data-i18n="th_pts">P</th></tr>
+                    </thead>
+                    <tbody id="standings-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="screen-transfer" class="screen">
+            <h2 data-i18n="title_transfer">2026/27 Transfer Merkezi</h2>
+            <div class="filter-bar">
+                <input type="text" id="transfer-search-input" placeholder="🔍 Oyuncu adı, kulüp veya lig ara..." oninput="renderTransferMarket()" style="flex: 2; min-width: 150px;" data-i18n-ph="ph_search_transfer">
+                <select id="transfer-status-filter" onchange="renderTransferMarket()" style="font-weight: 600; border-color: var(--primary);">
+                    <option value="ALL" data-i18n="opt_all_contracts">📋 Tüm Sözleşme Durumları</option>
+                    <option value="FREE" data-i18n="opt_free">🟢 Bonservisi Elinde (Serbest)</option>
+                    <option value="LISTED" data-i18n="opt_listed">🟡 Transfer Listesindeki Oyuncular</option>
+                    <option value="LOAN" data-i18n="opt_loan">🔵 Kiralık Alınabilir Oyuncular</option>
+                    <option value="CONTRACT" data-i18n="opt_contract">⚪ Sözleşmeli Oyuncular</option>
+                </select>
+                <select id="transfer-pos-filter" onchange="renderTransferMarket()">
+                    <option value="ALL" data-i18n="opt_all_pos">Tüm Mevkiler</option>
+                    <option value="KL" data-i18n="pos_gk">Kaleci (KL)</option>
+                    <option value="STP" data-i18n="pos_cb">Stoper (STP)</option>
+                    <option value="SĞB" data-i18n="pos_rb">Sağ Bek (SĞB)</option>
+                    <option value="SLB" data-i18n="pos_lb">Sol Bek (SLB)</option>
+                    <option value="OS" data-i18n="pos_cm">Orta Saha (OS)</option>
+                    <option value="OOS" data-i18n="pos_cam">Ofansif OS (OOS)</option>
+                    <option value="SğK" data-i18n="pos_rw">Sağ Kanat (SğK)</option>
+                    <option value="SlK" data-i18n="pos_lw">Sol Kanat (SlK)</option>
+                    <option value="SNT" data-i18n="pos_st">Santrafor (SNT)</option>
+                </select>
+                <select id="transfer-ovr-filter" onchange="renderTransferMarket()">
+                    <option value="ALL" data-i18n="opt_all_ovr">Tüm Reytingler (OVR)</option>
+                    <option value="LOW" data-i18n="opt_low_ovr">Düşük / Alt Lig (50 - 66 OVR)</option>
+                    <option value="MID" data-i18n="opt_mid_ovr">Orta Seviye (67 - 77 OVR)</option>
+                    <option value="HIGH" data-i18n="opt_high_ovr">Yıldız Oyuncular (78+ OVR)</option>
+                </select>
+            </div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 6px;" id="transfer-result-count">Oyuncular listeleniyor...</div>
+            <div class="player-list" id="transfer-list-container"></div>
+        </div>
+
+        <div id="screen-match" class="screen">
+            <h2 data-i18n="title_live_match">Canlı Maç Anlatımı</h2>
+            <div class="match-container">
+                <div style="font-size: 0.78rem; color: var(--text-muted);" id="match-minute">Dakika: 0'</div>
+                <div class="match-scoreboard">
+                    <span id="match-home-name">Ev Sahibi</span>
+                    <div class="match-score"><span id="match-home-score">0</span> - <span id="match-away-score">0</span></div>
+                    <span id="match-away-name">Deplasman</span>
+                </div>
+                <div class="match-commentary" id="match-commentary-box">
+                    <div class="commentary-item">Hakem düdüğü çaldı ve maç başladı!</div>
+                </div>
+                <button class="btn btn-block" id="match-action-btn" onclick="playSound('click'); progressMatch()" data-i18n="btn_progress_match">Maçı İlerlet</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODALS -->
+    <div class="modal" id="lineup-modal">
+        <div class="modal-content">
+            <h3 id="modal-title">Oyuncu Seç</h3>
+            <div class="player-list" id="modal-player-list" style="max-height: 240px;"></div>
+            <button class="btn btn-secondary" onclick="playSound('click'); closeLineupModal()" style="margin-top: 8px;" data-i18n="btn_close">Kapat</button>
+        </div>
+    </div>
+
+    <div class="modal" id="player-stats-modal">
+        <div class="modal-content" style="text-align: center;">
+            <h3 id="stat-player-name" style="color: var(--primary);">Oyuncu İstatistikleri</h3>
+            <div id="stat-player-details" style="background: var(--bg-dark); padding: 12px; border-radius: 8px; border: 1px solid var(--border); margin: 8px 0; font-size: 0.85rem; text-align: left; display: flex; flex-direction: column; gap: 6px;"></div>
+            <button class="btn btn-secondary btn-block" onclick="playSound('click'); closePlayerStatsModal()" data-i18n="btn_close">Kapat</button>
+        </div>
+    </div>
+
+    <nav class="bottom-nav" id="bottom-nav" style="display: none;">
+        <button class="nav-item active" onclick="playSound('click'); switchTab('dashboard')">
+            <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span data-i18n="nav_home">Ana Sayfa</span>
+        </button>
+        <button class="nav-item" onclick="playSound('click'); switchTab('squad')">
+            <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg><span data-i18n="nav_squad">Kadro & Taktik</span>
+        </button>
+        <button class="nav-item" onclick="playSound('click'); switchTab('standings')">
+            <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg><span data-i18n="nav_standings">Puan Durumu</span>
+        </button>
+        <button class="nav-item" onclick="playSound('click'); switchTab('transfer')">
+            <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg><span data-i18n="nav_transfer">Transfer Ara</span>
+        </button>
+    </nav>
+    <div class="toast" id="toast-message">İşlem Başarılı!</div>
+
+    <script>
+        // DİL VE SÖZLÜK SİSTEMİ (i18n)
+        let currentLang = localStorage.getItem("dfm_lang") || "tr";
+
+        const translations = {
+            tr: {
+                loading: "Yükleniyor...",
+                load_complete: "Yükleme Tamamlandı!",
+                start_game: "OYUNA BAŞLA",
+                pts: "P",
+                header_wk: "H.",
+                title_team_select: "Dünya Futbol Menajeri 2026 Sezonu",
+                desc_team_select: "2026/27 güncel ligler ve kadrolar! Tüm takımlar 38 haftalık fikstürde eşzamanlı maç yapar. Transfer listesi, kiralıklar ve bonservisi elinde onlarca gerçek oyuncu seni bekliyor!",
+                btn_continue: "💾 Kayıtlı Kariyere Devam Et",
+                ph_search_team: "Takım ara (Örn: Niğde, Fenerbahçe, Galatasaray)...",
+                title_dashboard: "Yönetim Paneli (2026/27 Sezonu — 38 Hafta)",
+                next_match: "Sıradaki Lig Maçı",
+                play_match: "Maça Çık",
+                club_info: "Kulüp & Sezon Bilgileri",
+                country_league: "Ülke / Lig:",
+                season_status: "Sezon Durumu:",
+                transfer_budget: "Transfer Bütçesi:",
+                youth_academy: "Altyapı Akademisi:",
+                btn_save_exit: "💾 Kaydet ve Menüye Dön",
+                title_squad: "2026/27 Kadro ve Taktik",
+                formation: "Diziliş:",
+                quick_save: "Anlık Kaydet",
+                squad_list_title: "Geniş Kadro (11'e atamak için tıkla)",
+                starting_11: "İlk 11 Taktik Sahası",
+                title_standings: "2026/27 Puan Durumu (38 Haftalık Lig)",
+                th_team: "Takım", th_p: "O", th_w: "G", th_d: "B", th_l: "M", th_pts: "P",
+                title_transfer: "2026/27 Transfer Merkezi",
+                ph_search_transfer: "🔍 Oyuncu adı, kulüp veya lig ara...",
+                opt_all_contracts: "📋 Tüm Sözleşme Durumları",
+                opt_free: "🟢 Bonservisi Elinde (Serbest)",
+                opt_listed: "🟡 Transfer Listesindeki Oyuncular",
+                opt_loan: "🔵 Kiralık Alınabilir Oyuncular",
+                opt_contract: "⚪ Sözleşmeli Oyuncular",
+                opt_all_pos: "Tüm Mevkiler",
+                pos_gk: "Kaleci (KL)", pos_cb: "Stoper (STP)", pos_rb: "Sağ Bek (SĞB)", pos_lb: "Sol Bek (SLB)",
+                pos_cm: "Orta Saha (OS)", pos_cam: "Ofansif OS (OOS)", pos_rw: "Sağ Kanat (SğK)", pos_lw: "Sol Kanat (SlK)", pos_st: "Santrafor (SNT)",
+                opt_all_ovr: "Tüm Reytingler (OVR)",
+                opt_low_ovr: "Düşük / Alt Lig (50 - 66 OVR)",
+                opt_mid_ovr: "Orta Seviye (67 - 77 OVR)",
+                opt_high_ovr: "Yıldız Oyuncular (78+ OVR)",
+                title_live_match: "Canlı Maç Anlatımı",
+                btn_progress_match: "Maçı İlerlet",
+                btn_close: "Kapat",
+                nav_home: "Ana Sayfa", nav_squad: "Kadro & Taktik", nav_standings: "Puan Durumu", nav_transfer: "Transfer Ara",
+                free_agent: "Ücretsiz (Serbest)",
+                thousand: "Bin",
+                select_team_btn: "Takımı Seç",
+                budget: "Bütçe", squad_size: "Kadro", players: "Oyuncu",
+                stats_btn: "İstatistik", add_to_11: "11'e Koy",
+                matches: "Maç", goals: "Gol", assists: "Asist",
+                market_free_tag: "Bonservisi Elinde", market_listed_tag: "Transfer Listesinde", market_loan_tag: "Kiralık", market_contract_tag: "Sözleşmeli",
+                btn_sign_free: "İmza Attır (Ücretsiz)", btn_sign_loan: "Kirala", btn_sign_buy: "Satın Al (Listede)", btn_sign_trans: "Transfer Et",
+                total_players_found: "Toplam {n} oyuncu bulundu",
+                insufficient_budget: "Yetersiz bütçe!",
+                season_completed: "2026/27 Sezonu Tamamlandı", season_ended: "Sezon Sona Erdi!", start_new_season: "Yeni Sezona Başla",
+                finish_match_btn: "Maçı Bitir ve Haftayı Tamamla",
+                match_start_comm: "Hakem düdüğü çaldı ve {w}. hafta mücadelesi başladı!",
+                match_cont_comm: "Dakika {m}' — Mücadele devam ediyor.",
+                goal_comm: "⚽ GOOOOL! Dakika {m} — {t} atağında topu ağlara yollayan isim: ",
+                concede_comm: "🥅 GOL... Dakika {m} — {t} golü buldu.",
+                saved_toast: "Kariyer kaydedildi!",
+                loaded_toast: "Kayıtlı kariyer yüklendi!",
+                career_started_toast: "{t} kariyeri başlatıldı!",
+                player_added_toast: "{p} ilk 11'e yerleştirildi!",
+                player_transferred_toast: "{p} transfer edildi!",
+                new_season_started: "Yeni Sezon Başladı!"
+            },
+            en: {
+                loading: "Loading...",
+                load_complete: "Loading Complete!",
+                start_game: "START GAME",
+                pts: "Pts",
+                header_wk: "Wk.",
+                title_team_select: "World Football Manager 2026 Season",
+                desc_team_select: "2026/27 up-to-date leagues and squads! All teams play simultaneously in a 38-week fixture. Dozens of real players, free agents, and loans await you!",
+                btn_continue: "💾 Continue Saved Career",
+                ph_search_team: "Search team (e.g., Real Madrid, Arsenal, Galatasaray)...",
+                title_dashboard: "Management Board (2026/27 Season — 38 Weeks)",
+                next_match: "Next League Match",
+                play_match: "Play Match",
+                club_info: "Club & Season Info",
+                country_league: "Country / League:",
+                season_status: "Season Status:",
+                transfer_budget: "Transfer Budget:",
+                youth_academy: "Youth Academy:",
+                btn_save_exit: "💾 Save & Main Menu",
+                title_squad: "2026/27 Squad & Tactics",
+                formation: "Formation:",
+                quick_save: "Quick Save",
+                squad_list_title: "Full Squad (Click to assign to XI)",
+                starting_11: "Starting 11 Pitch",
+                title_standings: "2026/27 Standings (38-Week League)",
+                th_team: "Team", th_p: "P", th_w: "W", th_d: "D", th_l: "L", th_pts: "Pts",
+                title_transfer: "2026/27 Transfer Market",
+                ph_search_transfer: "🔍 Search player name, club or league...",
+                opt_all_contracts: "📋 All Contract Statuses",
+                opt_free: "🟢 Free Agents",
+                opt_listed: "🟡 Transfer Listed Players",
+                opt_loan: "🔵 Loanable Players",
+                opt_contract: "⚪ Under Contract Players",
+                opt_all_pos: "All Positions",
+                pos_gk: "Goalkeeper (GK)", pos_cb: "Center Back (CB)", pos_rb: "Right Back (RB)", pos_lb: "Left Back (LB)",
+                pos_cm: "Central Mid (CM)", pos_cam: "Attacking Mid (CAM)", pos_rw: "Right Wing (RW)", pos_lw: "Left Wing (LW)", pos_st: "Striker (ST)",
+                opt_all_ovr: "All Ratings (OVR)",
+                opt_low_ovr: "Low / Lower League (50 - 66 OVR)",
+                opt_mid_ovr: "Mid Tier (67 - 77 OVR)",
+                opt_high_ovr: "Star Players (78+ OVR)",
+                title_live_match: "Live Match Commentary",
+                btn_progress_match: "Next Minutes",
+                btn_close: "Close",
+                nav_home: "Dashboard", nav_squad: "Squad & Tactics", nav_standings: "Standings", nav_transfer: "Transfers",
+                free_agent: "Free Agent",
+                thousand: "K",
+                select_team_btn: "Select Team",
+                budget: "Budget", squad_size: "Squad", players: "Players",
+                stats_btn: "Stats", add_to_11: "Add to 11",
+                matches: "Matches", goals: "Goals", assists: "Assists",
+                market_free_tag: "Free Agent", market_listed_tag: "Transfer Listed", market_loan_tag: "Loan", market_contract_tag: "Under Contract",
+                btn_sign_free: "Sign (Free)", btn_sign_loan: "Loan In", btn_sign_buy: "Buy (Listed)", btn_sign_trans: "Transfer",
+                total_players_found: "Total {n} players found",
+                insufficient_budget: "Insufficient budget!",
+                season_completed: "2026/27 Season Completed", season_ended: "Season Ended!", start_new_season: "Start New Season",
+                finish_match_btn: "Finish Match & Complete Week",
+                match_start_comm: "Referee blew the whistle! Week {w} match has started!",
+                match_cont_comm: "Minute {m}' — Match continues.",
+                goal_comm: "⚽ GOAAAL! Minute {m} — Scored for {t} by: ",
+                concede_comm: "🥅 GOAL... Minute {m} — {t} scored.",
+                saved_toast: "Career saved!",
+                loaded_toast: "Saved career loaded!",
+                career_started_toast: "{t} career started!",
+                player_added_toast: "{p} placed in starting 11!",
+                player_transferred_toast: "{p} transferred successfully!",
+                new_season_started: "New Season Started!"
+            }
+        };
+
+        function getText(key, params = {}) {
+            let str = (translations[currentLang] && translations[currentLang][key]) || translations['tr'][key] || key;
+            Object.keys(params).forEach(k => {
+                str = str.replace(`{${k}}`, params[k]);
+            });
+            return str;
+        }
+
+        function changeLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem("dfm_lang", lang);
+            document.getElementById("lang-select").value = lang;
+            document.getElementById("lang-select-menu").value = lang;
+            applyTranslations();
+            renderLeagueTabs();
+            renderTeamSelect();
+            renderSquad();
+            renderTacticsPitch();
+            renderStandings();
+            renderTransferMarket();
+            setupNextMatch();
+        }
+
+        function applyTranslations() {
+            document.querySelectorAll("[data-i18n]").forEach(el => {
+                const key = el.getAttribute("data-i18n");
+                el.innerText = getText(key);
+            });
+            document.querySelectorAll("[data-i18n-ph]").forEach(el => {
+                const key = el.getAttribute("data-i18n-ph");
+                el.placeholder = getText(key);
+            });
+        }
+
+        const TOTAL_WEEKS = 38;
+
+        const firstNames = ["Ali", "Mehmet", "Ahmet", "Mustafa", "Yusuf", "Emre", "Burak", "Kerem", "Umut", "Mert", "Berk", "Can", "Efe", "Arda", "Kaan", "Barış", "Oğuz", "Tolgahan", "Batuhan", "Berkay", "Enes", "Salih", "Hakan", "Cengiz", "Ferdi", "Abdülkerim", "İsmail", "Samet", "Yasin", "Gökhan", "Oltan", "Metehan", "Alperen", "Tunahan", "Yuşa", "Ebrar", "Furkan", "İbrahim", "Göktuğ", "Yalçın", "Berat", "Emirhan", "Onur", "Serkan", "Volkan", "Taylan", "Dorukhan", "Uğur", "Sinan", "Selçuk"];
+        const lastNames = ["Demirkıran", "Yılmaz", "Kaya", "Demir", "Çelik", "Şahin", "Yıldız", "Yıldırım", "Öztürk", "Aydın", "Özdemir", "Arslan", "Doğan", "Kılıç", "Aslan", "Çetin", "Kara", "Koç", "Kurt", "Özkan", "Şimşek", "Polat", "Özcan", "Korkmaz", "Erdoğan", "Yavuz", "Can", "Aksoy", "Şen", "Güler", "Acar", "Emlik", "Tığrak", "Dikişci", "Balcı", "Uslu", "Bolat", "Çolak", "Atasoy", "Baytekin", "Özer", "Keskin", "Sarı", "Tekin", "Taş", "Aktaş", "Bulut", "Güneş", "Karahan", "Bozkurt"];
+
+        function getRandomName() {
+            return firstNames[Math.floor(Math.random() * firstNames.length)] + " " + lastNames[Math.floor(Math.random() * lastNames.length)];
+        }
+
+        function formatEuro(rawPrice) {
+            if (rawPrice === 0) return getText("free_agent");
+            return rawPrice >= 1 ? rawPrice.toFixed(2) + "M €" : Math.round(rawPrice * 1000) + " " + getText("thousand") + " €";
+        }
+
+        // 2026/2027 Güncel Gerçek Kadrolar
+        const realSquadsDB = {
+            "Niğde Belediyespor": [
+                { name: "Tunahan Dikişci", pos: "KL", ovr: 59, age: 23, rawPrice: 0.08, contractStatus: "CONTRACT" },
+                { name: "Yuşa Tığrak", pos: "KL", ovr: 57, age: 21, rawPrice: 0.06, contractStatus: "CONTRACT" },
+                { name: "Ebrar Yıldırım", pos: "STP", ovr: 58, age: 22, rawPrice: 0.075, contractStatus: "CONTRACT" },
+                { name: "Yusuf Balcı", pos: "STP", ovr: 57, age: 24, rawPrice: 0.065, contractStatus: "CONTRACT" },
+                { name: "Samet Emlik", pos: "STP", ovr: 56, age: 23, rawPrice: 0.055, contractStatus: "CONTRACT" },
+                { name: "Mertcan Çam", pos: "SĞB", ovr: 58, age: 25, rawPrice: 0.07, contractStatus: "CONTRACT" },
+                { name: "Emre Özkan", pos: "SLB", ovr: 57, age: 26, rawPrice: 0.065, contractStatus: "CONTRACT" },
+                { name: "Furkan Uslu", pos: "OS", ovr: 58, age: 22, rawPrice: 0.075, contractStatus: "CONTRACT" },
+                { name: "İbrahim Bolat", pos: "OS", ovr: 57, age: 23, rawPrice: 0.065, contractStatus: "CONTRACT" },
+                { name: "Oğuzhan Erdoğan", pos: "OOS", ovr: 59, age: 24, rawPrice: 0.085, contractStatus: "CONTRACT" },
+                { name: "Burak Çolak", pos: "SlK", ovr: 59, age: 27, rawPrice: 0.09, contractStatus: "CONTRACT" },
+                { name: "İbrahim Koca", pos: "SNT", ovr: 60, age: 25, rawPrice: 0.10, contractStatus: "CONTRACT" },
+                { name: "Yusuf Atasoy", pos: "SNT", ovr: 58, age: 22, rawPrice: 0.075, contractStatus: "CONTRACT" }
+            ],
+            "Fenerbahçe": [
+                { name: "Dominik Livaković", pos: "KL", ovr: 82, age: 31, rawPrice: 10.5, contractStatus: "CONTRACT" },
+                { name: "Mason Greenwood", pos: "SğK", ovr: 83, age: 25, rawPrice: 35.0, contractStatus: "CONTRACT" },
+                { name: "İrfan Can Eğribayat", pos: "KL", ovr: 76, age: 27, rawPrice: 2.2, contractStatus: "CONTRACT" },
+                { name: "Çağlar Söyüncü", pos: "STP", ovr: 80, age: 30, rawPrice: 9.0, contractStatus: "CONTRACT" },
+                { name: "Alexander Djiku", pos: "STP", ovr: 80, age: 32, rawPrice: 8.5, contractStatus: "CONTRACT" },
+                { name: "Jayden Oosterwolde", pos: "SLB", ovr: 79, age: 25, rawPrice: 13.0, contractStatus: "CONTRACT" },
+                { name: "Bright Osayi-Samuel", pos: "SĞB", ovr: 78, age: 28, rawPrice: 8.0, contractStatus: "CONTRACT" },
+                { name: "Mert Müldür", pos: "SĞB", ovr: 77, age: 27, rawPrice: 5.5, contractStatus: "CONTRACT" },
+                { name: "Sofyan Amrabat", pos: "OS", ovr: 81, age: 30, rawPrice: 15.0, contractStatus: "CONTRACT" },
+                { name: "Fred", pos: "OS", ovr: 82, age: 33, rawPrice: 14.0, contractStatus: "CONTRACT" },
+                { name: "İsmail Yüksek", pos: "OS", ovr: 79, age: 27, rawPrice: 13.5, contractStatus: "CONTRACT" },
+                { name: "Sebastian Szymański", pos: "OOS", ovr: 81, age: 27, rawPrice: 18.0, contractStatus: "CONTRACT" },
+                { name: "Anderson Talisca", pos: "OOS", ovr: 82, age: 32, rawPrice: 12.0, contractStatus: "CONTRACT" },
+                { name: "İrfan Can Kahveci", pos: "SğK", ovr: 80, age: 31, rawPrice: 9.5, contractStatus: "CONTRACT" },
+                { name: "Oğuz Aydın", pos: "SlK", ovr: 77, age: 25, rawPrice: 6.5, contractStatus: "CONTRACT" },
+                { name: "Youssef En-Nesyri", pos: "SNT", ovr: 82, age: 29, rawPrice: 22.0, contractStatus: "CONTRACT" },
+                { name: "Cenk Tosun", pos: "SNT", ovr: 75, age: 35, rawPrice: 1.5, contractStatus: "LISTED" }
+            ],
+            "Galatasaray": [
+                { name: "Günay Güvenç", pos: "KL", ovr: 75, age: 35, rawPrice: 1.5, contractStatus: "CONTRACT" },
+                { name: "Davinson Sánchez", pos: "STP", ovr: 84, age: 30, rawPrice: 20.0, contractStatus: "CONTRACT" },
+                { name: "Abdülkerim Bardakcı", pos: "STP", ovr: 80, age: 32, rawPrice: 8.5, contractStatus: "CONTRACT" },
+                { name: "Victor Nelsson", pos: "STP", ovr: 78, age: 27, rawPrice: 11.0, contractStatus: "LISTED" },
+                { name: "Ismail Jakobs", pos: "SLB", ovr: 78, age: 27, rawPrice: 8.5, contractStatus: "CONTRACT" },
+                { name: "Kaan Ayhan", pos: "SĞB", ovr: 77, age: 31, rawPrice: 4.0, contractStatus: "CONTRACT" },
+                { name: "Lucas Torreira", pos: "OS", ovr: 83, age: 30, rawPrice: 16.0, contractStatus: "CONTRACT" },
+                { name: "Gabriel Sara", pos: "OS", ovr: 82, age: 27, rawPrice: 20.0, contractStatus: "CONTRACT" },
+                { name: "Kerem Demirbay", pos: "OS", ovr: 76, age: 33, rawPrice: 3.5, contractStatus: "LISTED" },
+                { name: "Barış Alper Yılmaz", pos: "SğK", ovr: 82, age: 26, rawPrice: 24.0, contractStatus: "CONTRACT" },
+                { name: "Roland Sallai", pos: "SğK", ovr: 79, age: 29, rawPrice: 11.0, contractStatus: "CONTRACT" },
+                { name: "Yunus Akgün", pos: "SlK", ovr: 79, age: 26, rawPrice: 11.5, contractStatus: "CONTRACT" },
+                { name: "Mauro Icardi", pos: "SNT", ovr: 83, age: 33, rawPrice: 14.0, contractStatus: "CONTRACT" },
+                { name: "Michy Batshuayi", pos: "SNT", ovr: 79, age: 32, rawPrice: 8.0, contractStatus: "CONTRACT" }
+            ],
+            "Beşiktaş": [
+                { name: "Mert Günok", pos: "KL", ovr: 79, age: 37, rawPrice: 2.5, contractStatus: "CONTRACT" },
+                { name: "Ersin Destanoğlu", pos: "KL", ovr: 73, age: 25, rawPrice: 2.0, contractStatus: "LOAN" },
+                { name: "Gabriel Paulista", pos: "STP", ovr: 79, age: 35, rawPrice: 3.0, contractStatus: "CONTRACT" },
+                { name: "Felix Uduokhai", pos: "STP", ovr: 78, age: 28, rawPrice: 7.5, contractStatus: "CONTRACT" },
+                { name: "Arthur Masuaku", pos: "SLB", ovr: 76, age: 32, rawPrice: 3.5, contractStatus: "CONTRACT" },
+                { name: "Jonas Svensson", pos: "SĞB", ovr: 76, age: 33, rawPrice: 2.5, contractStatus: "CONTRACT" },
+                { name: "Gedson Fernandes", pos: "OS", ovr: 82, age: 27, rawPrice: 17.5, contractStatus: "CONTRACT" },
+                { name: "Al-Musrati", pos: "OS", ovr: 79, age: 30, rawPrice: 9.0, contractStatus: "LISTED" },
+                { name: "Rafa Silva", pos: "OOS", ovr: 84, age: 33, rawPrice: 16.0, contractStatus: "CONTRACT" },
+                { name: "Milot Rashica", pos: "SğK", ovr: 78, age: 29, rawPrice: 7.5, contractStatus: "CONTRACT" },
+                { name: "Semih Kılıçsoy", pos: "SNT", ovr: 78, age: 21, rawPrice: 15.0, contractStatus: "CONTRACT" },
+                { name: "Ciro Immobile", pos: "SNT", ovr: 80, age: 36, rawPrice: 3.5, contractStatus: "CONTRACT" }
+            ],
+            "Trabzonspor": [
+                { name: "Uğurcan Çakır", pos: "KL", ovr: 81, age: 30, rawPrice: 10.0, contractStatus: "CONTRACT" },
+                { name: "Stefan Savić", pos: "STP", ovr: 79, age: 35, rawPrice: 3.0, contractStatus: "CONTRACT" },
+                { name: "Batista Mendy", pos: "OS", ovr: 78, age: 26, rawPrice: 9.5, contractStatus: "CONTRACT" },
+                { name: "Muhammed Cham", pos: "OOS", ovr: 77, age: 25, rawPrice: 6.5, contractStatus: "CONTRACT" },
+                { name: "Edin Višća", pos: "SğK", ovr: 78, age: 36, rawPrice: 2.5, contractStatus: "CONTRACT" },
+                { name: "Simon Banza", pos: "SNT", ovr: 79, age: 29, rawPrice: 11.0, contractStatus: "CONTRACT" },
+                { name: "Enis Destan", pos: "SNT", ovr: 74, age: 24, rawPrice: 2.8, contractStatus: "LOAN" }
+            ]
+        };
+
+        const extraMarketPlayers = [
+            { name: "Sergio Ramos", pos: "STP", ovr: 79, rawPrice: 0, club: "Serbest Oyuncu", country: "İspanya", contractStatus: "FREE" },
+            { name: "Keylor Navas", pos: "KL", ovr: 78, rawPrice: 0, club: "Serbest Oyuncu", country: "Kosta Rika", contractStatus: "FREE" },
+            { name: "Mario Balotelli", pos: "SNT", ovr: 75, rawPrice: 0, club: "Serbest Oyuncu", country: "İtalya", contractStatus: "FREE" },
+            { name: "Dele Alli", pos: "OOS", ovr: 74, rawPrice: 0, club: "Serbest Oyuncu", country: "İngiltere", contractStatus: "FREE" },
+            { name: "Layvin Kurzawa", pos: "SLB", ovr: 74, rawPrice: 0, club: "Serbest Oyuncu", country: "Fransa", contractStatus: "FREE" },
+            { name: "Serge Aurier", pos: "SĞB", ovr: 75, rawPrice: 0, club: "Serbest Oyuncu", country: "Fildişi Sahili", contractStatus: "FREE" },
+            { name: "Miralem Pjanić", pos: "OS", ovr: 76, rawPrice: 0, club: "Serbest Oyuncu", country: "Bosna Hersek", contractStatus: "FREE" },
+            { name: "Rachid Ghezzal", pos: "SğK", ovr: 74, rawPrice: 0, club: "Serbest Oyuncu", country: "Cezayir", contractStatus: "FREE" },
+            { name: "Dorukhan Toköz", pos: "OS", ovr: 72, rawPrice: 0, club: "Serbest Oyuncu", country: "Türkiye", contractStatus: "FREE" },
+            { name: "Emre Mor", pos: "SğK", ovr: 73, rawPrice: 0, club: "Serbest Oyuncu", country: "Türkiye", contractStatus: "FREE" },
+            { name: "Oltan Karakullukçu", pos: "SNT", ovr: 64, rawPrice: 0.14, club: "2. Lig Havuzu", country: "Türkiye", contractStatus: "LISTED" },
+            { name: "Taha Balcı", pos: "SNT", ovr: 62, rawPrice: 0.11, club: "2. Lig Havuzu", country: "Türkiye", contractStatus: "CONTRACT" },
+            { name: "Emirhan İlkhan", pos: "OS", ovr: 72, rawPrice: 0.45, club: "Torino (Kiralık)", country: "İtalya", contractStatus: "LOAN" },
+            { name: "Bartuğ Elmaz", pos: "OS", ovr: 71, rawPrice: 0.35, club: "Fenerbahçe (Kiralık)", country: "Türkiye", contractStatus: "LOAN" },
+            { name: "Can Uzun", pos: "OOS", ovr: 76, rawPrice: 1.20, club: "Frankfurt (Kiralık)", country: "Almanya", contractStatus: "LOAN" }
+        ];
+
+        const squadGenerator = (teamName, ovrBase, priceBase) => {
+            let roster = [];
+            let positions = ["KL", "KL", "STP", "STP", "STP", "SĞB", "SĞB", "SLB", "SLB", "OS", "OS", "OS", "OOS", "OOS", "SğK", "SğK", "SlK", "SlK", "SNT", "SNT", "OS", "STP", "SNT"];
+            
+            positions.forEach((pos, idx) => {
+                let name = getRandomName();
+                let ovr = Math.max(50, ovrBase - Math.floor(idx / 5) + Math.floor(Math.random() * 5) - 2);
+                let rawPrice = Math.max(0.025, Number((priceBase * (ovr / 75)).toFixed(3)));
+                let age = Math.floor(Math.random() * 19) + 18;
+                
+                let rand = Math.random();
+                let status = "CONTRACT";
+                if (rand < 0.14) status = "LISTED";
+                else if (rand < 0.24) { status = "LOAN"; rawPrice = Number((rawPrice * 0.25).toFixed(3)); }
+
+                roster.push({
+                    name: name,
+                    pos: pos,
+                    ovr: ovr,
+                    age: age,
+                    rawPrice: rawPrice,
+                    price: formatEuro(rawPrice),
+                    contractStatus: status,
+                    goals: 0,
+                    assists: 0,
+                    matches: 0
+                });
+            });
+            return roster;
+        };
+
+        const createFullTeams = (names, ovrBase, budgetBase) => {
+            return names.map(name => {
+                let realPlayers = (realSquadsDB[name] || []).map(p => ({
+                    ...p,
+                    age: p.age || (Math.floor(Math.random() * 14) + 21),
+                    goals: 0,
+                    assists: 0,
+                    matches: 0,
+                    price: formatEuro(p.rawPrice),
+                    contractStatus: p.contractStatus || "CONTRACT"
+                }));
+                let generated = squadGenerator(name, ovrBase, budgetBase * 0.15);
+                let combined = [...realPlayers];
+                generated.forEach(gp => {
+                    if (!combined.some(rp => rp.name.toLowerCase() === gp.name.toLowerCase())) {
+                        combined.push(gp);
+                    }
+                });
+                return {
+                    name: name,
+                    budget: budgetBase,
+                    squad: combined,
+                    points: 0,
+                    played: 0,
+                    won: 0,
+                    drawn: 0,
+                    lost: 0,
+                    gf: 0,
+                    ga: 0
+                };
+            });
+        };
+
+        const worldDB = {
+            "Türkiye": {
+                "Süper Lig (2026/27)": createFullTeams([
+                    "Galatasaray", "Fenerbahçe", "Beşiktaş", "Trabzonspor", "İstanbul Başakşehir",
+                    "Samsunspor", "Göztepe", "Eyüpspor", "Kasımpaşa", "Konyaspor",
+                    "Çaykur Rizespor", "Alanyaspor", "Antalyaspor", "Gaziantep FK", "Kayserispor",
+                    "Kocaelispor", "Gençlerbirliği", "Sakaryaspor", "Fatih Karagümrük", "Ankaragücü"
+                ], 77, 25.0),
+                "1. Lig (2026/27)": createFullTeams([
+                    "Bandırmaspor", "Boluspor", "Ümraniyespor", "Manisa FK", "Keçiörengücü",
+                    "Esenler Erokspor", "Iğdır FK", "Pendikspor", "İstanbulspor", "Sivasspor",
+                    "Bodrum FK", "Hatayspor", "Adana Demirspor", "Çorum FK", "Erzurumspor FK",
+                    "Amed SFK", "Vanspor FK", "Serik Belediyespor", "Sarıyer", "Kastamonuspor"
+                ], 68, 3.5),
+                "3. Lig 3. Grup (2026/27)": createFullTeams([
+                    "Niğde Belediyespor", "Erciyes 38 FSK", "Karşıyaka", "Eskişehirspor", "Orduspor 1967",
+                    "Kütahyaspor", "Düzcespor", "Silivrispor", "Kırşehir FSK", "Karaman FK",
+                    "Yeni Mersin İY", "Osmaniyespor FK", "Ağrı 1970 Spor", "Yozgat Bozokspor", "1964 Silifkespor",
+                    "Diyarbekirspor", "Adanaspor Alt", "Mardin 1969", "Kahramanmaraşspor", "Bursa Nilüfer"
+                ], 57, 0.35)
+            },
+            "İngiltere": {
+                "Premier League (2026/27)": createFullTeams([
+                    "Liverpool", "Arsenal", "Manchester City", "Chelsea", "Newcastle United",
+                    "Aston Villa", "Nottingham Forest", "Brighton", "Tottenham", "Manchester United",
+                    "Bournemouth", "Fulham", "Brentford", "West Ham", "Crystal Palace",
+                    "Everton", "Wolverhampton", "Leeds United", "Burnley", "Sheffield United"
+                ], 84, 85.0)
+            },
+            "İspanya": {
+                "LaLiga (2026/27)": createFullTeams([
+                    "Real Madrid", "Barcelona", "Atletico Madrid", "Athletic Club", "Villarreal",
+                    "Real Sociedad", "Real Betis", "Girona", "Mallorca", "Osasuna",
+                    "Celta Vigo", "Sevilla", "Rayo Vallecano", "Getafe", "Valencia",
+                    "Espanyol", "Alaves", "Las Palmas", "Levante", "Real Zaragoza"
+                ], 83, 80.0)
+            }
+        };
+
+        let gameState = {
+            teamName: "",
+            country: "Türkiye",
+            league: "3. Lig 3. Grup (2026/27)",
+            budget: 0.35,
+            points: 0,
+            week: 1,
+            squad: [],
+            formation: "4-3-3",
+            lineup: { kl: null, sğb: null, stp1: null, stp2: null, slb: null, os1: null, os2: null, oos: null, sgk: null, slk: null, snt: null },
+            transferMarket: [],
+            pendingOffer: null,
+            leagueTables: {}
+        };
+
+        function buildGlobalTransferMarket() {
+            let pool = [];
+            let idCounter = 1;
+
+            extraMarketPlayers.forEach(p => {
+                pool.push({
+                    id: idCounter++,
+                    name: p.name,
+                    pos: p.pos,
+                    ovr: p.ovr,
+                    age: p.age || 25,
+                    rawPrice: p.rawPrice,
+                    price: formatEuro(p.rawPrice),
+                    club: p.club,
+                    country: p.country,
+                    contractStatus: p.contractStatus,
+                    goals: 0,
+                    assists: 0,
+                    matches: 0
+                });
+            });
+
+            Object.keys(worldDB).forEach(country => {
+                Object.keys(worldDB[country]).forEach(league => {
+                    worldDB[country][league].forEach(team => {
+                        team.squad.forEach(p => {
+                            pool.push({
+                                id: idCounter++,
+                                name: p.name,
+                                pos: p.pos,
+                                ovr: p.ovr,
+                                rawPrice: p.rawPrice,
+                                price: formatEuro(p.rawPrice),
+                                club: team.name,
+                                country: country,
+                                contractStatus: p.contractStatus || "CONTRACT"
+                            });
+                        });
+                    });
+                });
+            });
+            return pool;
+        }
+
+        let selectedCountry = "Türkiye";
+        let selectedLeague = "3. Lig 3. Grup (2026/27)";
+        let currentMatchState = { opponent: "", homeScore: 0, awayScore: 0, minute: 0 };
+        let activeLineupSlot = null;
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playSound(type) {
+            try {
+                if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                let now = audioCtx.currentTime;
+                if (type === 'click') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(400, now);
+                    osc.frequency.exponentialRampToValueAtTime(800, now + 0.05);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                    osc.start(now);
+                    osc.stop(now + 0.05);
+                } else if (type === 'goal') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, now);
+                    osc.frequency.setValueAtTime(659.25, now + 0.1);
+                    osc.frequency.setValueAtTime(783.99, now + 0.2);
+                    osc.frequency.setValueAtTime(1046.50, now + 0.3);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+                    osc.start(now);
+                    osc.stop(now + 0.6);
+                } else if (type === 'whistle') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(2500, now);
+                    osc.frequency.setValueAtTime(2200, now + 0.15);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                } else if (type === 'concede') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(200, now);
+                    osc.frequency.exponentialRampToValueAtTime(80, now + 0.3);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                }
+            } catch(e) {}
+        }
+
+        function showToast(text) {
+            const t = document.getElementById("toast-message");
+            t.innerText = text;
+            t.style.display = "block";
+            setTimeout(() => { t.style.display = "none"; }, 3000);
+        }
+
+        window.onload = function() {
+            changeLanguage(currentLang);
+            runArmorSplashLoader();
+        };
+
+        function runArmorSplashLoader() {
+            let progress = 0;
+            const barFill = document.getElementById("armor-bar-fill");
+            const loadText = document.getElementById("armor-loading-text");
+            const startBtn = document.getElementById("armor-start-btn");
+
+            let interval = setInterval(() => {
+                progress += Math.floor(Math.random() * 8) + 4;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    loadText.innerText = getText("load_complete");
+                    loadText.style.color = "var(--success)";
+                    startBtn.innerText = getText("start_game");
+                    startBtn.style.display = "block";
+                } else {
+                    loadText.innerText = `${getText("loading")} %${progress}`;
+                }
+                barFill.style.width = progress + "%";
+            }, 80);
+        }
+
+        function startTheGameFromSplash() {
+            playSound('click');
+            const splash = document.getElementById("armor-splash-screen");
+            splash.style.opacity = "0";
+            setTimeout(() => {
+                splash.style.display = "none";
+                checkSavedGameOnMenu();
+                renderLeagueTabs();
+                renderTeamSelect();
+            }, 600);
+        }
+
+        const SAVE_KEY = "dfm_save_game_2026_2027_v26_i18n";
+
+        function checkSavedGameOnMenu() {
+            const saved = localStorage.getItem(SAVE_KEY);
+            const loadContainer = document.getElementById("load-game-container");
+            if (saved) { loadContainer.style.display = "block"; } else { loadContainer.style.display = "none"; }
+        }
+
+        function saveGameProgress() {
+            localStorage.setItem(SAVE_KEY, JSON.stringify(gameState));
+            showToast(getText("saved_toast"));
+            checkSavedGameOnMenu();
+        }
+
+        function loadGame() {
+            const saved = localStorage.getItem(SAVE_KEY);
+            if (saved) {
+                gameState = JSON.parse(saved);
+                selectedCountry = gameState.country;
+                selectedLeague = gameState.league;
+                if (gameState.leagueTables && gameState.leagueTables[gameState.country] && gameState.leagueTables[gameState.country][gameState.league]) {
+                    worldDB[gameState.country][gameState.league] = gameState.leagueTables[gameState.country][gameState.league];
+                }
+                applyLoadedGameState();
+                showToast(getText("loaded_toast"));
+            }
+        }
+
+        function saveAndExit() {
+            saveGameProgress();
+            document.getElementById("app-header").style.display = "none";
+            document.getElementById("bottom-nav").style.display = "none";
+            switchTab('team-select');
+            checkSavedGameOnMenu();
+        }
+
+        function applyLoadedGameState() {
+            let budgetText = formatEuro(gameState.budget);
+            document.getElementById("header-team-name").innerText = gameState.teamName;
+            document.getElementById("header-budget").innerText = gameState.budget >= 1 ? gameState.budget.toFixed(2) : Math.round(gameState.budget * 1000) + ' ' + getText('thousand');
+            document.getElementById("header-points").innerText = gameState.points;
+            document.getElementById("header-week").innerText = Math.min(gameState.week, TOTAL_WEEKS);
+            document.getElementById("info-league").innerText = `${gameState.country} - ${gameState.league}`;
+            document.getElementById("info-budget").innerText = budgetText;
+            
+            let nextAcademyWeek = (Math.floor((gameState.week - 1) / 10) + 1) * 10;
+            document.getElementById("info-academy-status").innerText = nextAcademyWeek <= TOTAL_WEEKS ? `Wk ${nextAcademyWeek}` : "Done";
+
+            document.getElementById("app-header").style.display = "flex";
+            document.getElementById("bottom-nav").style.display = "flex";
+            document.getElementById("formation-select").value = gameState.formation || "4-3-3";
+            setupNextMatch();
+            renderStandings();
+            switchTab('dashboard');
+        }
+
+        function updateLeagueTargetDisplay(rank) {
+            let elmt = document.getElementById("info-europe-target");
+            if (!elmt) return;
+            if (gameState.week > TOTAL_WEEKS) {
+                elmt.innerText = rank === 1 ? "🏆 Champion!" : `🏁 Rank: ${rank}`;
+                return;
+            }
+            if (rank === 1) elmt.innerText = "🏆 1. Champion";
+            else if (rank <= 5) elmt.innerText = `🔼 ${rank}. Play-Off`;
+            else if (rank >= 17) elmt.innerText = `⚠️ ${rank}. Relegation`;
+            else elmt.innerText = `📊 ${rank}. Mid-table`;
+        }
+
+        function onCountryChange() {
+            selectedCountry = document.getElementById("country-select").value;
+            const leagues = Object.keys(worldDB[selectedCountry]);
+            selectedLeague = leagues[0];
+            renderLeagueTabs();
+            renderTeamSelect();
+        }
+
+        function renderLeagueTabs() {
+            const container = document.getElementById("league-tabs-container");
+            container.innerHTML = "";
+            Object.keys(worldDB[selectedCountry]).forEach(lg => {
+                const btn = document.createElement("button");
+                btn.className = "btn btn-secondary" + (lg === selectedLeague ? " active-tab" : "");
+                btn.innerText = lg;
+                btn.onclick = () => { selectedLeague = lg; renderLeagueTabs(); renderTeamSelect(); };
+                container.appendChild(btn);
+            });
+        }
+
+        function renderTeamSelect() {
+            const container = document.getElementById("team-list-container");
+            const searchQuery = (document.getElementById("team-search-input").value || "").toLowerCase().trim();
+            container.innerHTML = "";
+            let teams = worldDB[selectedCountry][selectedLeague] || [];
+            if (searchQuery) {
+                teams = [];
+                Object.keys(worldDB).forEach(ct => {
+                    Object.keys(worldDB[ct]).forEach(lg => {
+                        worldDB[ct][lg].forEach(t => {
+                            if (t.name.toLowerCase().includes(searchQuery)) teams.push({ ...t, foundCountry: ct, foundLeague: lg });
+                        });
+                    });
+                });
+            }
+            
+            let html = "";
+            teams.forEach((team) => {
+                const targetCountry = team.foundCountry || selectedCountry;
+                const targetLeague = team.foundLeague || selectedLeague;
+                const safeCountry = targetCountry.replace(/'/g, "\'");
+                const safeLeague = targetLeague.replace(/'/g, "\'");
+                const safeName = team.name.replace(/'/g, "\'");
+                
+                html += `
+                    <div class="team-card" onclick="playSound('click'); selectTeam('${safeCountry}', '${safeLeague}', '${safeName}')">
+                        <div style="font-weight: bold; font-size: 0.95rem; color: #fff;">${team.name}</div>
+                        <div style="font-size: 0.72rem; color: var(--primary);">${targetCountry} • ${targetLeague}</div>
+                        <div style="font-size: 0.72rem; color: var(--text-muted);">${getText('budget')}: ${formatEuro(team.budget)} | ${getText('squad_size')}: ${team.squad.length} ${getText('players')}</div>
+                        <button class="btn" onclick="playSound('click'); event.stopPropagation(); selectTeam('${safeCountry}', '${safeLeague}', '${safeName}');" style="margin-top: 4px; width: 100%;">${getText('select_team_btn')}</button>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function selectTeam(country, league, name) {
+            Object.keys(worldDB).forEach(ct => {
+                Object.keys(worldDB[ct]).forEach(lg => {
+                    worldDB[ct][lg].forEach(t => {
+                        t.points = 0; t.played = 0; t.won = 0; t.drawn = 0; t.lost = 0; t.gf = 0; t.ga = 0;
+                    });
+                });
+            });
+
+            const teamList = worldDB[country][league];
+            const team = teamList.find(t => t.name === name);
+            gameState.teamName = team.name;
+            gameState.country = country;
+            gameState.league = league;
+            gameState.budget = team.budget || 0.35;
+            gameState.squad = JSON.parse(JSON.stringify(team.squad));
+            gameState.week = 1;
+            gameState.points = 0;
+            gameState.formation = "4-3-3";
+            gameState.transferMarket = buildGlobalTransferMarket().filter(p => p.club !== team.name);
+            
+            if (!gameState.leagueTables[country]) gameState.leagueTables[country] = {};
+            gameState.leagueTables[country][league] = worldDB[country][league];
+
+            autoAssignLineup();
+            saveGameProgress();
+            applyLoadedGameState();
+            showToast(getText("career_started_toast", { t: gameState.teamName }));
+        }
+
+        function autoAssignLineup() {
+            const pick = (pos, idx = 0) => {
+                let list = gameState.squad.filter(p => p.pos === pos);
+                return list[idx] || null;
+            };
+            gameState.lineup.kl = pick('KL', 0) || gameState.squad[0];
+            gameState.lineup.sğb = pick('SĞB', 0) || gameState.squad[1];
+            gameState.lineup.stp1 = pick('STP', 0) || gameState.squad[2];
+            gameState.lineup.stp2 = pick('STP', 1) || gameState.squad[3];
+            gameState.lineup.slb = pick('SLB', 0) || gameState.squad[4];
+            gameState.lineup.os1 = pick('OS', 0) || gameState.squad[5];
+            gameState.lineup.os2 = pick('OS', 1) || gameState.squad[6];
+            gameState.lineup.oos = pick('OOS', 0) || gameState.squad[7];
+            gameState.lineup.sgk = pick('SğK', 0) || gameState.squad[8];
+            gameState.lineup.slk = pick('SlK', 0) || gameState.squad[9];
+            gameState.lineup.snt = pick('SNT', 0) || gameState.squad[10];
+        }
+
+        function changeFormation(form) {
+            gameState.formation = form;
+            renderTacticsPitch();
+            saveGameProgress();
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById('screen-' + tabId).classList.add('active');
+            const navIndex = ['dashboard', 'squad', 'standings', 'transfer'].indexOf(tabId);
+            if (navIndex !== -1) document.querySelectorAll('.nav-item')[navIndex].classList.add('active');
+            if (tabId === 'squad') { renderSquad(); renderTacticsPitch(); }
+            if (tabId === 'standings') renderStandings();
+            if (tabId === 'transfer') renderTransferMarket();
+        }
+
+        function getStatusBadgeHTML(status) {
+            if (status === "FREE") return `<span class="status-badge status-free">${getText('market_free_tag')}</span>`;
+            if (status === "LISTED") return `<span class="status-badge status-listed">${getText('market_listed_tag')}</span>`;
+            if (status === "LOAN") return `<span class="status-badge status-loan">${getText('market_loan_tag')}</span>`;
+            return `<span class="status-badge status-contract">${getText('market_contract_tag')}</span>`;
+        }
+
+        function renderSquad() {
+            const container = document.getElementById("squad-list-container");
+            container.innerHTML = "";
+            gameState.squad.forEach((player, idx) => {
+                if (player.goals === undefined) player.goals = 0;
+                if (player.assists === undefined) player.assists = 0;
+                if (player.matches === undefined) player.matches = 0;
+
+                const item = document.createElement("div");
+                item.className = "player-item";
+                let loanTag = player.isLoanedIn ? `<span class="status-badge status-loan">${getText('market_loan_tag')}</span>` : "";
+                if (player.age === undefined) player.age = Math.floor(Math.random() * 15) + 20;
+                item.innerHTML = `
+                    <div class="player-details" style="cursor: pointer;" onclick="openPlayerStats(${idx})">
+                        <div class="player-ovr">${player.ovr}</div>
+                        <div class="player-pos">${player.pos}</div>
+                        <div>
+                            <strong>${player.name}</strong> ${loanTag}
+                            <div style="font-size: 0.68rem; color: var(--text-muted);">${getText('matches')}: ${player.matches} | ${getText('goals')}: <strong style="color:var(--success);">${player.goals}</strong> | ${getText('assists')}: <strong style="color:var(--info);">${player.assists}</strong></div>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:4px;">
+                        <button class="btn btn-secondary" style="padding: 4px 6px; font-size: 0.7rem;" onclick="playSound('click'); openPlayerStats(${idx})">${getText('stats_btn')}</button>
+                        <button class="btn" style="padding: 4px 8px; font-size: 0.72rem;" onclick="playSound('click'); quickAssignToTeam(${idx})">${getText('add_to_11')}</button>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function openPlayerStats(idx) {
+            const p = gameState.squad[idx];
+            if (!p) return;
+            if (p.goals === undefined) p.goals = 0;
+            if (p.assists === undefined) p.assists = 0;
+            if (p.matches === undefined) p.matches = 0;
+
+            document.getElementById("stat-player-name").innerText = p.name + " (" + p.pos + ")";
+            document.getElementById("stat-player-details").innerHTML = `
+                <div>${getText('opt_all_pos')}: <strong>${p.pos}</strong></div>
+                <div>OVR: <strong style="color:var(--primary);">${p.ovr}</strong></div>
+                <div>Value: <strong>${formatEuro(p.rawPrice)}</strong></div>
+                <hr style="border-color:var(--border); margin:4px 0;">
+                <div>${getText('matches')}: <strong>${p.matches}</strong></div>
+                <div>${getText('goals')}: <strong style="color:var(--success);">${p.goals}</strong></div>
+                <div>${getText('assists')}: <strong style="color:var(--info);">${p.assists}</strong></div>
+            `;
+            document.getElementById("player-stats-modal").style.display = "flex";
+        }
+
+        function closePlayerStatsModal() {
+            document.getElementById("player-stats-modal").style.display = "none";
+        }
+
+        function quickAssignToTeam(playerIdx) {
+            const p = gameState.squad[playerIdx];
+            if (!p) return;
+            if (p.pos === 'KL') gameState.lineup.kl = p;
+            else if (p.pos === 'SĞB') gameState.lineup.sğb = p;
+            else if (p.pos === 'SLB') gameState.lineup.slb = p;
+            else if (p.pos === 'STP') { if (!gameState.lineup.stp1) gameState.lineup.stp1 = p; else gameState.lineup.stp2 = p; }
+            else if (p.pos === 'OS') { if (!gameState.lineup.os1) gameState.lineup.os1 = p; else gameState.lineup.os2 = p; }
+            else if (p.pos === 'OOS') gameState.lineup.oos = p;
+            else if (p.pos === 'SğK') gameState.lineup.sgk = p;
+            else if (p.pos === 'SlK') gameState.lineup.slk = p;
+            else if (p.pos === 'SNT') gameState.lineup.snt = p;
+            else { gameState.lineup.os1 = p; }
+            
+            renderTacticsPitch();
+            saveGameProgress();
+            showToast(getText("player_added_toast", { p: p.name }));
+        }
+
+        function renderTacticsPitch() {
+            const pitch = document.getElementById("tactics-pitch");
+            const l = gameState.lineup;
+            const form = gameState.formation || "4-3-3";
+            
+            const node = (slotPos, slotIdx, label, pObj) => `
+                <div class="pitch-player-node" onclick="playSound('click'); openLineupModal('${slotPos}', ${slotIdx})">
+                    <div class="pos-badge">${label}</div>
+                    <div class="name-badge">${pObj ? pObj.name.split(' ').pop() : "Select"}</div>
+                    <div class="ovr-badge">${pObj ? 'OVR ' + pObj.ovr : ''}</div>
+                </div>
+            `;
+
+            let html = `<div class="pitch-line-box-left"></div><div class="pitch-line-box-right"></div><div class="pitch-formation-container">`;
+            
+            html += `
+                <div class="pitch-col">${node('KL', 0, 'KL', l.kl)}</div>
+                <div class="pitch-col">
+                    ${node('SĞB', 0, 'SĞB', l.sğb)}
+                    ${node('STP', 0, 'STP', l.stp1)}
+                    ${node('STP', 1, 'STP', l.stp2)}
+                    ${node('SLB', 0, 'SLB', l.slb)}
+                </div>
+                <div class="pitch-col">
+                    ${node('OS', 0, 'OS', l.os1)}
+                    ${node('OOS', 0, 'OOS', l.oos)}
+                    ${node('OS', 1, 'OS', l.os2)}
+                </div>
+                <div class="pitch-col">
+                    ${node('SlK', 0, 'SlK', l.slk)}
+                    ${node('SNT', 0, 'SNT', l.snt)}
+                    ${node('SğK', 0, 'SğK', l.sgk)}
+                </div>
+            `;
+            html += `</div>`;
+            pitch.innerHTML = html;
+        }
+
+        function openLineupModal(posGroup, index) {
+            activeLineupSlot = { posGroup, index };
+            const modal = document.getElementById('lineup-modal');
+            const listContainer = document.getElementById('modal-player-list');
+            document.getElementById('modal-title').innerText = `${posGroup}`;
+            listContainer.innerHTML = "";
+            gameState.squad.forEach(player => {
+                const item = document.createElement("div");
+                item.className = "player-item";
+                item.style.cursor = "pointer";
+                item.innerHTML = `<div class="player-details"><div class="player-ovr">${player.ovr}</div><div class="player-pos">${player.pos}</div><div><strong>${player.name}</strong></div></div><button class="btn" style="padding: 3px 6px; font-size: 0.7rem;">Select</button>`;
+                item.onclick = () => assignPlayerToSlot(player);
+                listContainer.appendChild(item);
+            });
+            modal.style.display = "flex";
+        }
+
+        function closeLineupModal() { document.getElementById('lineup-modal').style.display = "none"; }
+
+        function assignPlayerToSlot(player) {
+            const { posGroup, index } = activeLineupSlot;
+            if (posGroup === 'KL') gameState.lineup.kl = player;
+            else if (posGroup === 'SĞB') gameState.lineup.sğb = player;
+            else if (posGroup === 'SLB') gameState.lineup.slb = player;
+            else if (posGroup === 'STP') { if (index === 0) gameState.lineup.stp1 = player; else gameState.lineup.stp2 = player; }
+            else if (posGroup === 'OS') { if (index === 0) gameState.lineup.os1 = player; else gameState.lineup.os2 = player; }
+            else if (posGroup === 'OOS') gameState.lineup.oos = player;
+            else if (posGroup === 'SğK') gameState.lineup.sgk = player;
+            else if (posGroup === 'SlK') gameState.lineup.slk = player;
+            else if (posGroup === 'SNT') gameState.lineup.snt = player;
+            closeLineupModal();
+            renderTacticsPitch();
+            saveGameProgress();
+            showToast(getText("player_added_toast", { p: player.name }));
+        }
+
+        function renderTransferMarket() {
+            const container = document.getElementById("transfer-list-container");
+            const searchQuery = (document.getElementById("transfer-search-input").value || "").toLowerCase().trim();
+            const statusFilter = document.getElementById("transfer-status-filter").value;
+            const posFilter = document.getElementById("transfer-pos-filter").value;
+            const ovrFilter = document.getElementById("transfer-ovr-filter").value;
+
+            let filtered = gameState.transferMarket.filter(p => {
+                const matchesSearch = !searchQuery || p.name.toLowerCase().includes(searchQuery) || p.club.toLowerCase().includes(searchQuery) || p.country.toLowerCase().includes(searchQuery);
+                const matchesStatus = statusFilter === "ALL" || p.contractStatus === statusFilter;
+                const matchesPos = posFilter === "ALL" || p.pos === posFilter;
+                let matchesOvr = true;
+                if (ovrFilter === "LOW") matchesOvr = p.ovr <= 66;
+                else if (ovrFilter === "MID") matchesOvr = p.ovr >= 67 && p.ovr <= 77;
+                else if (ovrFilter === "HIGH") matchesOvr = p.ovr >= 78;
+
+                return matchesSearch && matchesStatus && matchesPos && matchesOvr;
+            });
+
+            document.getElementById("transfer-result-count").innerText = getText("total_players_found", { n: filtered.length });
+            container.innerHTML = "";
+            filtered.slice(0, 80).forEach(player => {
+                const item = document.createElement("div");
+                item.className = "player-item";
+                let btnLabel = getText("btn_sign_trans");
+                let btnColor = "var(--primary)";
+                if (player.contractStatus === "FREE") { btnLabel = getText("btn_sign_free"); btnColor = "var(--success)"; }
+                else if (player.contractStatus === "LOAN") { btnLabel = getText("btn_sign_loan"); btnColor = "var(--info)"; }
+                else if (player.contractStatus === "LISTED") { btnLabel = getText("btn_sign_buy"); btnColor = "var(--warning)"; }
+
+                item.innerHTML = `
+                    <div class="player-details">
+                        <div class="player-ovr">${player.ovr}</div>
+                        <div class="player-pos">${player.pos}</div>
+                        <div>
+                            <strong>${player.name}</strong> ${getStatusBadgeHTML(player.contractStatus)}
+                            <div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 2px;">${player.club} (${player.country}) • Value: <strong style="color:#fff;">${formatEuro(player.rawPrice)}</strong></div>
+                        </div>
+                    </div>
+                    <button class="btn" style="background:${btnColor}; color:${player.contractStatus === 'LISTED' ? '#000' : '#fff'}; white-space:nowrap;" onclick="playSound('click'); buyPlayer(${player.id})">${btnLabel}</button>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function buyPlayer(id) {
+            const pIndex = gameState.transferMarket.findIndex(p => p.id === id);
+            if (pIndex === -1) return;
+            const player = gameState.transferMarket[pIndex];
+            if (gameState.budget >= player.rawPrice) {
+                gameState.budget = Number((gameState.budget - player.rawPrice).toFixed(3));
+                let budgetText = formatEuro(gameState.budget);
+                document.getElementById("header-budget").innerText = gameState.budget >= 1 ? gameState.budget.toFixed(2) : Math.round(gameState.budget * 1000) + ' ' + getText('thousand');
+                document.getElementById("info-budget").innerText = budgetText;
+                
+                gameState.squad.push({
+                    name: player.name,
+                    pos: player.pos,
+                    ovr: player.ovr,
+                    price: formatEuro(player.rawPrice),
+                    rawPrice: player.rawPrice,
+                    isLoanedIn: player.contractStatus === "LOAN"
+                });
+                gameState.transferMarket.splice(pIndex, 1);
+                renderTransferMarket();
+                saveGameProgress();
+                showToast(getText("player_transferred_toast", { p: player.name }));
+            } else {
+                showToast(getText("insufficient_budget"));
+            }
+        }
+
+        function setupNextMatch() {
+            const btn = document.getElementById("btn-play-match");
+            if (gameState.week > TOTAL_WEEKS) {
+                document.getElementById("dashboard-match-week").innerText = getText("season_completed");
+                document.getElementById("dashboard-match-fixture").innerText = getText("season_ended");
+                btn.innerText = getText("start_new_season");
+                btn.onclick = startNewSeason;
+                return;
+            }
+            btn.innerText = getText("play_match");
+            btn.onclick = startMatch;
+
+            if (!worldDB[gameState.country] || !worldDB[gameState.country][gameState.league]) return;
+            const leagueTeams = worldDB[gameState.country][gameState.league].filter(t => t.name !== gameState.teamName);
+            const opponent = leagueTeams[(gameState.week - 1) % leagueTeams.length] || { name: "Opponent SK" };
+            currentMatchState.opponent = opponent.name;
+            document.getElementById("dashboard-match-week").innerText = `${getText('header_wk')} ${gameState.week} / ${TOTAL_WEEKS}`;
+            document.getElementById("dashboard-match-fixture").innerText = `${gameState.teamName} vs ${opponent.name}`;
+        }
+
+        function startNewSeason() {
+            gameState.week = 1;
+            gameState.points = 0;
+            saveGameProgress();
+            applyLoadedGameState();
+            showToast(getText("new_season_started"));
+        }
+
+        function getTeamAverageOvr(team) {
+            if (!team || !team.squad || team.squad.length === 0) return 65;
+            let sorted = [...team.squad].sort((a, b) => b.ovr - a.ovr).slice(0, 11);
+            let sum = sorted.reduce((acc, p) => acc + p.ovr, 0);
+            return sum / sorted.length;
+        }
+
+        function startMatch() {
+            playSound('whistle');
+            if (gameState.week > TOTAL_WEEKS) return;
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen-match').classList.add('active');
+            currentMatchState.homeScore = 0;
+            currentMatchState.awayScore = 0;
+            currentMatchState.minute = 0;
+            document.getElementById("match-home-name").innerText = gameState.teamName;
+            document.getElementById("match-away-name").innerText = currentMatchState.opponent;
+            document.getElementById("match-home-score").innerText = "0";
+            document.getElementById("match-away-score").innerText = "0";
+            document.getElementById("match-minute").innerText = `Minute: 0'`;
+            const commBox = document.getElementById("match-commentary-box");
+            commBox.innerHTML = `<div class="commentary-item">${getText("match_start_comm", { w: gameState.week })}</div>`;
+            document.getElementById("match-action-btn").innerText = getText("btn_progress_match");
+            document.getElementById("match-action-btn").onclick = progressMatch;
+        }
+
+        function progressMatch() {
+            currentMatchState.minute += 15;
+            if (currentMatchState.minute > 90) currentMatchState.minute = 90;
+            document.getElementById("match-minute").innerText = `Minute: ${currentMatchState.minute}'`;
+            const commBox = document.getElementById("match-commentary-box");
+
+            const leagueTeams = worldDB[gameState.country][gameState.league];
+            const myTeam = leagueTeams.find(t => t.name === gameState.teamName);
+            const oppTeam = leagueTeams.find(t => t.name === currentMatchState.opponent);
+            const myOvr = getTeamAverageOvr(myTeam);
+            const oppOvr = getTeamAverageOvr(oppTeam);
+            const diff = (myOvr - oppOvr) * 0.018;
+
+            let eventText = getText("match_cont_comm", { m: currentMatchState.minute });
+            let randEvent = Math.random();
+            if (randEvent > 0.45) {
+                let homeChance = Math.min(0.75, Math.max(0.25, 0.50 + diff));
+                if (Math.random() < homeChance) {
+                    currentMatchState.homeScore++;
+                    let scorers = Object.values(gameState.lineup).filter(p => p && p.pos !== 'KL');
+                    let scorerPlayer = scorers.length ? scorers[Math.floor(Math.random() * scorers.length)] : null;
+                    let scorer = scorerPlayer ? scorerPlayer.name : gameState.teamName;
+                    
+                    if (scorerPlayer) scorerPlayer.goals = (scorerPlayer.goals || 0) + 1;
+
+                    eventText = getText("goal_comm", { m: currentMatchState.minute, t: gameState.teamName }) + `<strong style="color:var(--success);">${scorer}</strong>!`;
+                    playSound('goal');
+                } else {
+                    currentMatchState.awayScore++;
+                    eventText = getText("concede_comm", { m: currentMatchState.minute, t: currentMatchState.opponent });
+                    playSound('concede');
+                }
+            }
+            
+            commBox.innerHTML += `<div class="commentary-item">${eventText}</div>`;
+            commBox.scrollTop = commBox.scrollHeight;
+            document.getElementById("match-home-score").innerText = currentMatchState.homeScore;
+            document.getElementById("match-away-score").innerText = currentMatchState.awayScore;
+            if (currentMatchState.minute === 90) {
+                document.getElementById("match-action-btn").innerText = getText("finish_match_btn");
+                document.getElementById("match-action-btn").onclick = finishMatch;
+            }
+        }
+
+        function simulateOtherLeagueMatches(leagueTeams, userTeamName, opponentName) {
+            let otherTeams = leagueTeams.filter(t => t.name !== userTeamName && t.name !== opponentName);
+            for (let i = otherTeams.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [otherTeams[i], otherTeams[j]] = [otherTeams[j], otherTeams[i]];
+            }
+
+            for (let i = 0; i < otherTeams.length - 1; i += 2) {
+                let t1 = otherTeams[i];
+                let t2 = otherTeams[i + 1];
+                let g1 = Math.max(0, Math.round(Math.random() * 2));
+                let g2 = Math.max(0, Math.round(Math.random() * 2));
+
+                t1.played = (t1.played || 0) + 1;
+                t2.played = (t2.played || 0) + 1;
+                t1.gf = (t1.gf || 0) + g1;
+                t1.ga = (t1.ga || 0) + g2;
+                t2.gf = (t2.gf || 0) + g2;
+                t2.ga = (t2.ga || 0) + g1;
+
+                if (g1 > g2) {
+                    t1.points = (t1.points || 0) + 3;
+                    t1.won = (t1.won || 0) + 1;
+                    t2.lost = (t2.lost || 0) + 1;
+                } else if (g2 > g1) {
+                    t2.points = (t2.points || 0) + 3;
+                    t2.won = (t2.won || 0) + 1;
+                    t1.lost = (t1.lost || 0) + 1;
+                } else {
+                    t1.points = (t1.points || 0) + 1;
+                    t2.points = (t2.points || 0) + 1;
+                    t1.drawn = (t1.drawn || 0) + 1;
+                    t2.drawn = (t2.drawn || 0) + 1;
+                }
+            }
+        }
+
+        function finishMatch() {
+            const leagueTeams = worldDB[gameState.country][gameState.league];
+            let myTeam = leagueTeams.find(t => t.name === gameState.teamName);
+            let oppTeam = leagueTeams.find(t => t.name === currentMatchState.opponent);
+
+            if (!myTeam) {
+                myTeam = { name: gameState.teamName, points: 0, played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0 };
+                leagueTeams.push(myTeam);
+            }
+
+            myTeam.played = (myTeam.played || 0) + 1;
+            myTeam.gf = (myTeam.gf || 0) + currentMatchState.homeScore;
+            myTeam.ga = (myTeam.ga || 0) + currentMatchState.awayScore;
+
+            if (oppTeam) {
+                oppTeam.played = (oppTeam.played || 0) + 1;
+                oppTeam.gf = (oppTeam.gf || 0) + currentMatchState.awayScore;
+                oppTeam.ga = (oppTeam.ga || 0) + currentMatchState.homeScore;
+            }
+
+            if (currentMatchState.homeScore > currentMatchState.awayScore) {
+                myTeam.points += 3;
+                myTeam.won = (myTeam.won || 0) + 1;
+                if (oppTeam) oppTeam.lost = (oppTeam.lost || 0) + 1;
+                gameState.points += 3;
+            } else if (currentMatchState.homeScore === currentMatchState.awayScore) {
+                myTeam.points += 1;
+                myTeam.drawn = (myTeam.drawn || 0) + 1;
+                if (oppTeam) { oppTeam.points = (oppTeam.points || 0) + 1; oppTeam.drawn = (oppTeam.drawn || 0) + 1; }
+                gameState.points += 1;
+            } else {
+                myTeam.lost = (myTeam.lost || 0) + 1;
+                if (oppTeam) { oppTeam.points = (oppTeam.points || 0) + 3; oppTeam.won = (oppTeam.won || 0) + 1; }
+            }
+
+            simulateOtherLeagueMatches(leagueTeams, gameState.teamName, currentMatchState.opponent);
+
+            if (!gameState.leagueTables[gameState.country]) gameState.leagueTables[gameState.country] = {};
+            gameState.leagueTables[gameState.country][gameState.league] = leagueTeams;
+
+            gameState.week++;
+            document.getElementById("header-points").innerText = gameState.points;
+            document.getElementById("header-week").innerText = Math.min(gameState.week, TOTAL_WEEKS);
+
+            saveGameProgress();
+            setupNextMatch();
+            renderStandings();
+            switchTab('dashboard');
+        }
+
+        function renderStandings() {
+            const tbody = document.getElementById("standings-table-body");
+            tbody.innerHTML = "";
+            if (!worldDB[gameState.country] || !worldDB[gameState.country][gameState.league]) return;
+            
+            const leagueTeams = [...worldDB[gameState.country][gameState.league]].sort((a, b) => {
+                if ((b.points || 0) !== (a.points || 0)) return (b.points || 0) - (a.points || 0);
+                let gdB = (b.gf || 0) - (b.ga || 0);
+                let gdA = (a.gf || 0) - (a.ga || 0);
+                if (gdB !== gdA) return gdB - gdA;
+                return (b.gf || 0) - (a.gf || 0);
+            });
+            
+            let myRank = leagueTeams.findIndex(t => t.name === gameState.teamName) + 1;
+            if (myRank > 0) updateLeagueTargetDisplay(myRank);
+
+            leagueTeams.forEach((t, index) => {
+                const tr = document.createElement("tr");
+                let rankNum = index + 1;
+                let gf = t.gf || 0;
+                let ga = t.ga || 0;
+                let av = gf - ga;
+                let avStr = av > 0 ? `+${av}` : `${av}`;
+
+                if (t.name === gameState.teamName) tr.style.background = "rgba(5, 150, 105, 0.22)";
+                tr.innerHTML = `
+                    <td><strong>${rankNum}</strong></td>
+                    <td><strong>${t.name}</strong></td>
+                    <td>${t.played || 0}</td>
+                    <td>${t.won || 0}</td>
+                    <td>${t.drawn || 0}</td>
+                    <td>${t.lost || 0}</td>
+                    <td>${gf}</td>
+                    <td>${ga}</td>
+                    <td>${avStr}</td>
+                    <td><strong style="color:var(--primary);">${t.points || 0}</strong></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+    </script>
+</body>
+</html>
