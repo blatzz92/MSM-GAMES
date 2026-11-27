@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FNAF Game Launcher - Menü</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+        
+        * {
+            user-select: none;
+            -webkit-user-select: none;
+            font-family: 'VT323', monospace;
+        }
+
+        body {
+            background-color: #050505;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        /* CRT Scanline Effect */
+        .crt::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 40;
+            background-size: 100% 3px, 6px 100%;
+            pointer-events: none;
+        }
+
+        .glitch-hover:hover {
+            text-shadow: 2px 2px #ef4444, -2px -2px #3b82f6;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen bg-black crt">
+
+    <!-- LAUNCHER CONTAINER -->
+    <div class="relative w-full max-w-4xl aspect-video bg-neutral-900 border-4 border-neutral-800 rounded-lg overflow-hidden shadow-2xl flex flex-col items-center justify-center p-8 text-center">
+        
+        <!-- Background Ambient Glow -->
+        <div class="absolute inset-0 bg-radial from-red-950/20 via-black to-black pointer-events-none"></div>
+
+        <!-- Title Header -->
+        <h1 class="text-6xl font-extrabold text-red-600 tracking-wider mb-2 animate-pulse z-10 glitch-hover">
+            FIVE NIGHTS ARCADE
+        </h1>
+        <p class="text-xl text-neutral-400 mb-10 max-w-lg z-10">
+            Oynamak istediğiniz vardiya modülünü veya oyunu aşağıdan seçin:
+        </p>
+
+        <!-- Game Selection Buttons -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl z-10">
+            <!-- Oyun 1 (data_fnaf1 klasöründen çeker) -->
+            <a href="data_fnaf1/oyun1.html" class="group bg-neutral-950/80 hover:bg-red-950/40 border-2 border-neutral-700 hover:border-red-600 p-6 rounded-xl shadow-xl transition transform hover:scale-105 active:scale-95 flex flex-col items-center">
+                <span class="text-4xl mb-2">🔦</span>
+                <h2 class="text-3xl font-bold text-neutral-200 group-hover:text-red-400 transition">OYUN 1</h2>
+                <p class="text-sm text-neutral-400 mt-2">Klasik Gece Vardiyası ve Kamera Sistemi</p>
+            </a>
+
+            <!-- Oyun 2 (data_fnaf1 klasöründen çeker) -->
+            <a href="data_fnaf1/oyun2.html" class="group bg-neutral-950/80 hover:bg-blue-950/40 border-2 border-neutral-700 hover:border-blue-600 p-6 rounded-xl shadow-xl transition transform hover:scale-105 active:scale-95 flex flex-col items-center">
+                <span class="text-4xl mb-2">📹</span>
+                <h2 class="text-3xl font-bold text-neutral-200 group-hover:text-blue-400 transition">OYUN 2</h2>
+                <p class="text-sm text-neutral-400 mt-2">Gelişmiş Animatronic & Korku Modu</p>
+            </a>
+        </div>
+
+        <!-- Footer Info -->
+        <div class="absolute bottom-4 text-xs text-neutral-600 z-10">
+            NW.js / HTML5 Security Engine Ready • v2.4 (data_fnaf1)
+        </div>
+    </div>
+
+</body>
+</html>
