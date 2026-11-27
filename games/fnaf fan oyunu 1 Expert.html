@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Five Nights at Nightshift</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+        
+        * {
+            user-select: none;
+            -webkit-user-select: none;
+            font-family: 'VT323', monospace;
+        }
+
+        body {
+            background-color: #050505;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        /* CRT Scanline Effect */
+        .crt::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 40;
+            background-size: 100% 3px, 6px 100%;
+            pointer-events: none;
+        }
+
+        /* Intense Jumpscare Screen Shake */
+        .shake-intense {
+            animation: shake 0.05s infinite alternate;
+        }
+
+        @keyframes shake {
+            0% { transform: translate(12px, -12px) rotate(1deg); }
+            50% { transform: translate(-12px, 12px) rotate(-1deg); }
+            100% { transform: translate(15px, 10px) rotate(2deg); }
+        }
+
+        /* Glitch effect on cam switch */
+        .glitch-flash {
+            animation: flash 0.15s ease-out;
+        }
+
+        @keyframes flash {
+            0% { opacity: 0.8; background: white; }
+            100% { opacity: 1; }
+        }
+
+        /* Static Noise Animation */
+        .static-bg {
+            background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noiseFilter)" opacity="0.12"/></svg>');
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen bg-black crt">
+
+    <!-- GAME CONTAINER (Expanded & Responsive 16:9 Viewport) -->
+    <div id="game-container" class="relative w-full max-w-6xl aspect-video bg-neutral-900 border-4 border-neutral-800 rounded-lg overflow-hidden shadow-2xl flex flex-col justify-between">
+        
+        <!-- CANVAS MAIN SCREEN (Office or Camera view) -->
+        <canvas id="gameCanvas" width="1280" height="720" class="w-full h-full object-cover"></canvas>
+
+        <!-- TOP HUD (Clock, Power, Night Info) -->
+        <div id="hud" class="absolute top-0 left-0 right-0 p-4 flex justify-between items-start pointer-events-none z-20">
+            <!-- Left HUD: Power info -->
+            <div class="bg-black/80 backdrop-blur p-3 rounded border border-neutral-700 shadow-md">
+                <div class="text-2xl font-bold tracking-widest text-green-400">GÜÇ: <span id="power-text">100</span>%</div>
+                <div class="flex items-center gap-1 mt-1">
+                    <span class="text-sm text-neutral-400">TÜKETİM:</span>
+                    <div id="usage-bars" class="flex gap-1">
+                        <div class="w-3 h-5 bg-green-500 rounded-sm"></div>
+                        <div class="w-3 h-5 bg-neutral-800 rounded-sm"></div>
+                        <div class="w-3 h-5 bg-neutral-800 rounded-sm"></div>
+                        <div class="w-3 h-5 bg-neutral-800 rounded-sm"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right HUD: Clock & Night -->
+            <div class="bg-black/80 backdrop-blur p-3 rounded border border-neutral-700 text-right shadow-md">
+                <div class="text-3xl font-bold tracking-widest text-yellow-400"><span id="clock-text">12</span> AM</div>
+                <div class="text-sm text-neutral-400 tracking-wider">GECE 1</div>
+            </div>
+        </div>
+
+        <!-- OVERLAY UI: OFFICE CONTROLS (Positioned at far edges so center stays completely visible) -->
+        <div id="office-controls" class="absolute inset-y-0 inset-x-0 pointer-events-none flex justify-between p-4 z-10">
+            <!-- Left Side Control Console -->
+            <div class="flex flex-col justify-center gap-4 pointer-events-auto bg-black/40 backdrop-blur-sm p-2 rounded-r-lg border-r border-y border-neutral-700/50">
+                <button id="btn-left-door" class="w-16 h-20 bg-red-950 border-2 border-red-600 hover:bg-red-800 text-white font-bold rounded shadow-lg transition active:scale-95 flex flex-col items-center justify-center">
+                    <span class="text-xs text-red-300">SOL</span>
+                    <span class="text-xs">KAPI</span>
+                    <span id="txt-left-door" class="text-sm font-black text-red-400 mt-1">AÇIK</span>
+                </button>
+                <button id="btn-left-light" class="w-16 h-20 bg-amber-950 border-2 border-amber-600 hover:bg-amber-800 text-white font-bold rounded shadow-lg transition active:scale-95 flex flex-col items-center justify-center">
+                    <span class="text-xs text-amber-300">SOL</span>
+                    <span class="text-xs">IŞIK</span>
+                    <span id="txt-left-light" class="text-sm font-black text-amber-400 mt-1">KAPALI</span>
+                </button>
+            </div>
+
+            <!-- Right Side Control Console -->
+            <div class="flex flex-col justify-center gap-4 pointer-events-auto bg-black/40 backdrop-blur-sm p-2 rounded-l-lg border-l border-y border-neutral-700/50">
+                <button id="btn-right-door" class="w-16 h-20 bg-red-950 border-2 border-red-600 hover:bg-red-800 text-white font-bold rounded shadow-lg transition active:scale-95 flex flex-col items-center justify-center">
+                    <span class="text-xs text-red-300">SAĞ</span>
+                    <span class="text-xs">KAPI</span>
+                    <span id="txt-right-door" class="text-sm font-black text-red-400 mt-1">AÇIK</span>
+                </button>
+                <button id="btn-right-light" class="w-16 h-20 bg-amber-950 border-2 border-amber-600 hover:bg-amber-800 text-white font-bold rounded shadow-lg transition active:scale-95 flex flex-col items-center justify-center">
+                    <span class="text-xs text-amber-300">SAĞ</span>
+                    <span class="text-xs">IŞIK</span>
+                    <span id="txt-right-light" class="text-sm font-black text-amber-400 mt-1">KAPALI</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- OVERLAY UI: CAMERA MONITOR SYSTEM (Compact map on bottom-right, screen fully unblocked) -->
+        <div id="camera-overlay" class="absolute inset-0 bg-black/20 hidden z-20 pointer-events-none p-4 flex flex-col justify-between">
+            <div class="self-end bg-black/80 backdrop-blur border border-neutral-700 p-4 rounded-lg shadow-2xl pointer-events-auto w-80">
+                <div class="text-xl font-bold text-neutral-300 mb-2 border-b border-neutral-700 pb-1 flex justify-between items-center">
+                    <span id="cam-name-display">CAM 1 - Sahne</span>
+                    <span class="w-3 h-3 rounded-full bg-red-500 animate-ping"></span>
+                </div>
+                <div class="grid grid-cols-2 gap-2 mb-2">
+                    <button class="cam-btn bg-blue-900/80 border-2 border-blue-400 text-white p-2 rounded text-sm font-bold transition" data-cam="1">CAM 1: Sahne</button>
+                    <button class="cam-btn bg-neutral-800 border border-neutral-600 text-neutral-300 p-2 rounded text-sm font-bold hover:bg-neutral-700 transition" data-cam="2">CAM 2: Yemek</button>
+                    <button class="cam-btn bg-neutral-800 border border-neutral-600 text-neutral-300 p-2 rounded text-sm font-bold hover:bg-neutral-700 transition" data-cam="3">CAM 3: Korsan</button>
+                    <button class="cam-btn bg-neutral-800 border border-neutral-600 text-neutral-300 p-2 rounded text-sm font-bold hover:bg-neutral-700 transition" data-cam="4">CAM 4: Sol Kor.</button>
+                    <button class="cam-btn bg-neutral-800 border border-neutral-600 text-neutral-300 p-2 rounded text-sm font-bold hover:bg-neutral-700 transition" data-cam="5">CAM 5: Sağ Kor.</button>
+                    <button class="cam-btn bg-neutral-800 border border-neutral-600 text-neutral-300 p-2 rounded text-sm font-bold hover:bg-neutral-700 transition" data-cam="6">CAM 6: Mutfak</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTTOM CONTROL BAR (Camera Monitor Toggle Button & Settings) -->
+        <div class="absolute bottom-3 left-1/2 -translate-x-1/2 z-30 pointer-events-auto flex gap-3">
+            <button id="btn-toggle-cam" class="bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border-2 border-neutral-600 px-6 py-2 rounded-lg text-lg font-bold shadow-xl transition active:scale-95 flex items-center gap-2">
+                <span>📹</span> MONİTÖR
+            </button>
+            <button id="btn-toggle-settings" class="bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border-2 border-neutral-600 px-4 py-2 rounded-lg text-lg font-bold shadow-xl transition active:scale-95 flex items-center gap-1">
+                <span>⚙️</span> AYARLAR
+            </button>
+        </div>
+    </div>
+
+    <!-- SETTINGS MODAL OVERLAY -->
+    <div id="settings-modal" class="absolute inset-0 bg-black/90 z-40 hidden flex-col items-center justify-center p-6 text-center backdrop-blur-md">
+        <div class="bg-neutral-900 border-2 border-red-700 p-6 rounded-xl max-w-md w-full shadow-2xl text-left">
+            <h2 class="text-3xl font-bold text-red-500 mb-6 border-b border-neutral-700 pb-2 text-center tracking-widest">KORKUTUCULUK VE SES AYARLARI</h2>
+            
+            <!-- Jumpscare Volume & Bass Boost Level Slider -->
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-1">
+                    <label class="text-lg font-bold text-neutral-200">BASS / SES SEVİYESİ (%100 - %1000)</label>
+                    <span id="lbl-volume" class="text-red-400 font-bold text-lg">500%</span>
+                </div>
+                <input type="range" id="slider-volume" min="1" max="10" step="0.5" value="5" class="w-full accent-red-600 bg-neutral-800 cursor-pointer">
+                <p class="text-xs text-neutral-500 mt-1">*Yüksek değerler aşırı düşük frekanslı bass distorsiyonu üretir.</p>
+            </div>
+
+            <!-- Jumpscare Intensity (Visuals & Shake) -->
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-1">
+                    <label class="text-lg font-bold text-neutral-200">KORKUTUCULUK ŞİDDETİ</label>
+                    <span id="lbl-intensity" class="text-yellow-400 font-bold text-lg">MAKSİMUM</span>
+                </div>
+                <select id="select-intensity" class="w-full bg-neutral-800 border border-neutral-700 text-white rounded p-2 text-lg focus:outline-none focus:border-red-500">
+                    <option value="1">Düşük (Sakin Flash)</option>
+                    <option value="2">Orta (Standart Titreşim)</option>
+                    <option value="3" selected>Maksimum (Aşırı Flaş + Ekran Sarsıntısı)</option>
+                </select>
+            </div>
+
+            <div class="flex justify-end mt-8">
+                <button id="btn-close-settings" class="bg-red-700 hover:bg-red-600 text-white font-bold px-6 py-2 rounded transition">
+                    KAYDET VE KAPAT
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- START SCREEN OVERLAY -->
+    <div id="start-screen" class="absolute inset-0 bg-black/95 z-50 flex flex-col items-center justify-center p-6 text-center">
+        <h1 class="text-6xl font-extrabold text-red-600 tracking-wider mb-2 animate-pulse">FIVE NIGHTS AT NIGHTSHIFT</h1>
+        <p class="text-xl text-neutral-400 mb-8 max-w-md">Gece bekçisi olarak 06:00'ya kadar hayatta kal. Kapıları ve ışıkları dikkatli kullan, gücünü tüketme!</p>
+        <button id="btn-start-game" class="bg-red-700 hover:bg-red-600 text-white font-bold text-2xl px-10 py-4 rounded-lg shadow-2xl border-2 border-red-400 transition transform hover:scale-105 active:scale-95">
+            GECEYİ BAŞLAT
+        </button>
+    </div>
+
+    <!-- END SCREEN OVERLAY (Game Over / Win) -->
+    <div id="end-screen" class="absolute inset-0 bg-black/95 z-50 hidden flex-col items-center justify-center p-6 text-center">
+        <h2 id="end-title" class="text-6xl font-bold text-red-600 mb-4 tracking-widest">OYNANDI</h2>
+        <p id="end-desc" class="text-xl text-neutral-400 mb-8 max-w-md">Yakalandın!</p>
+        <button id="btn-restart-game" class="bg-neutral-800 hover:bg-neutral-700 text-white font-bold text-xl px-8 py-3 rounded-lg border border-neutral-600 transition">
+            TEKRAR DENE
+        </button>
+    </div>
+
+    <!-- JUMPSCARE CANVAS OVERLAY -->
+    <div id="jumpscare-overlay" class="fixed inset-0 bg-black z-50 hidden pointer-events-none">
+        <canvas id="jumpscareCanvas" class="w-full h-full"></canvas>
+    </div>
+
+    <script>
+        // --- AUDIO SYNTHESIZER & MP3 LOADER (Web Audio API) ---
+        class SoundSystem {
+            constructor() {
+                this.ctx = null;
+                this.jumpsAudio = new Audio();
+                this.jumpsAudio.src = 'data/jumps.mp3';
+                this.jumpsAudio.volume = 1.0;
+                this.hasCustomJumpscare = false;
+                this.bassVolumeMultiplier = 5.0; // Default 500%
+
+                this.jumpsAudio.addEventListener('canplaythrough', () => {
+                    this.hasCustomJumpscare = true;
+                });
+                this.jumpsAudio.addEventListener('error', () => {
+                    this.hasCustomJumpscare = false;
+                });
+            }
+
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+
+            playClick() {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(400, this.ctx.currentTime + 0.05);
+                gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.05);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.05);
+            }
+
+            playDoor() {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.5, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.2);
+            }
+
+            playLight() {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(120, this.ctx.currentTime);
+                gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.08);
+            }
+
+            playStatic(duration = 0.15) {
+                if (!this.ctx) return;
+                const bufferSize = this.ctx.sampleRate * duration;
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+                const noise = this.ctx.createBufferSource();
+                noise.buffer = buffer;
+                const gain = this.ctx.createGain();
+                gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+                noise.connect(gain);
+                gain.connect(this.ctx.destination);
+                noise.start();
+            }
+
+            playJumpscare() {
+                if (this.hasCustomJumpscare) {
+                    this.jumpsAudio.currentTime = 0;
+                    this.jumpsAudio.volume = Math.min(1.0, this.bassVolumeMultiplier / 10);
+                    this.jumpsAudio.play().catch(e => {
+                        this.playSyntheticBassJumpscare();
+                    });
+                    return;
+                }
+                this.playSyntheticBassJumpscare();
+            }
+
+            playSyntheticBassJumpscare() {
+                if (!this.ctx) return;
+                const t = this.ctx.currentTime;
+
+                const masterGain = this.ctx.createGain();
+                masterGain.gain.setValueAtTime(this.bassVolumeMultiplier, t);
+
+                const bassFilter = this.ctx.createBiquadFilter();
+                bassFilter.type = 'lowshelf';
+                bassFilter.frequency.setValueAtTime(120, t);
+                bassFilter.gain.setValueAtTime(35, t); // Massive +35dB Bass Boost
+
+                const subOsc = this.ctx.createOscillator();
+                subOsc.type = 'sawtooth';
+                subOsc.frequency.setValueAtTime(200, t);
+                subOsc.frequency.exponentialRampToValueAtTime(25, t + 1.2);
+
+                const screech1 = this.ctx.createOscillator();
+                const screech2 = this.ctx.createOscillator();
+                screech1.type = 'sawtooth';
+                screech2.type = 'square';
+
+                screech1.frequency.setValueAtTime(220, t);
+                screech1.frequency.exponentialRampToValueAtTime(3000, t + 0.04);
+                screech1.frequency.linearRampToValueAtTime(300, t + 1.2);
+
+                screech2.frequency.setValueAtTime(160, t);
+                screech2.frequency.exponentialRampToValueAtTime(2400, t + 0.05);
+                screech2.frequency.linearRampToValueAtTime(200, t + 1.2);
+
+                const bufferSize = this.ctx.sampleRate * 1.2;
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const noiseData = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    noiseData[i] = (Math.random() * 2 - 1);
+                }
+                const noiseNode = this.ctx.createBufferSource();
+                noiseNode.buffer = buffer;
+
+                const noiseGain = this.ctx.createGain();
+                noiseGain.gain.setValueAtTime(4.0, t);
+                noiseGain.gain.exponentialRampToValueAtTime(0.01, t + 1.2);
+
+                const oscGain = this.ctx.createGain();
+                oscGain.gain.setValueAtTime(4.0, t);
+                oscGain.gain.exponentialRampToValueAtTime(0.01, t + 1.2);
+
+                subOsc.connect(bassFilter);
+                screech1.connect(oscGain);
+                screech2.connect(oscGain);
+                noiseNode.connect(noiseGain);
+
+                bassFilter.connect(masterGain);
+                oscGain.connect(masterGain);
+                noiseGain.connect(masterGain);
+                masterGain.connect(this.ctx.destination);
+
+                subOsc.start(t);
+                screech1.start(t);
+                screech2.start(t);
+                noiseNode.start(t);
+
+                subOsc.stop(t + 1.2);
+                screech1.stop(t + 1.2);
+                screech2.stop(t + 1.2);
+                noiseNode.stop(t + 1.2);
+            }
+            
+            playWin() {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(261.63, this.ctx.currentTime);
+                osc.frequency.setValueAtTime(329.63, this.ctx.currentTime + 0.2);
+                osc.frequency.setValueAtTime(392.00, this.ctx.currentTime + 0.4);
+                osc.frequency.setValueAtTime(523.25, this.ctx.currentTime + 0.6);
+
+                gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 1.2);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 1.2);
+            }
+        }
+
+        const sounds = new SoundSystem();
+
+        // --- GAME STATE & CONSTANTS ---
+        const GAME_STATES = { MENU: 0, PLAYING: 1, GAMEOVER: 2, WIN: 3 };
+        let currentState = GAME_STATES.MENU;
+
+        let canvas = document.getElementById('gameCanvas');
+        let ctx = canvas.getContext('2d');
+
+        let leftDoor = false;
+        let rightDoor = false;
+        let leftLight = false;
+        let rightLight = false;
+        let camOpen = false;
+        let currentCam = 1;
+
+        let power = 100;
+        let powerUsage = 1;
+        let timeHour = 0;
+        let secondTimer = 0;
+        const SECONDS_PER_HOUR = 30;
+
+        const animatronics = {
+            beary: { name: 'Beary', location: 1, timer: 0, interval: 14, attackStage: 0 },
+            bunny: { name: 'Bunny', location: 1, timer: 0, interval: 9, attackStage: 0 },
+            fox: { name: 'Fox', location: 3, timer: 0, interval: 12, state: 0 }
+        };
+
+        const camNames = {
+            1: "CAM 1 - Sahne",
+            2: "CAM 2 - Yemek Hall",
+            3: "CAM 3 - Korsan Koyu",
+            4: "CAM 4 - Sol Koridor",
+            5: "CAM 5 - Sağ Koridor",
+            6: "CAM 6 - Mutfak"
+        };
+
+        let lastTime = 0;
+        let jumpscareAnimId = null;
+        let jumpscareIntensity = 3;
+
+        // UI DOM Elements
+        const btnLeftDoor = document.getElementById('btn-left-door');
+        const btnLeftLight = document.getElementById('btn-left-light');
+        const btnRightDoor = document.getElementById('btn-right-door');
+        const btnRightLight = document.getElementById('btn-right-light');
+        const btnToggleCam = document.getElementById('btn-toggle-cam');
+        const camOverlay = document.getElementById('camera-overlay');
+        const txtLeftDoor = document.getElementById('txt-left-door');
+        const txtLeftLight = document.getElementById('txt-left-light');
+        const txtRightDoor = document.getElementById('txt-right-door');
+        const txtRightLight = document.getElementById('txt-right-light');
+        const powerText = document.getElementById('power-text');
+        const clockText = document.getElementById('clock-text');
+        const usageBarsContainer = document.getElementById('usage-bars');
+        const camNameDisplay = document.getElementById('cam-name-display');
+
+        // Settings Elements
+        const btnToggleSettings = document.getElementById('btn-toggle-settings');
+        const btnCloseSettings = document.getElementById('btn-close-settings');
+        const settingsModal = document.getElementById('settings-modal');
+        const sliderVolume = document.getElementById('slider-volume');
+        const lblVolume = document.getElementById('lbl-volume');
+        const selectIntensity = document.getElementById('select-intensity');
+        const lblIntensity = document.getElementById('lbl-intensity');
+
+        btnToggleSettings.addEventListener('click', () => {
+            sounds.playClick();
+            settingsModal.classList.remove('hidden');
+            settingsModal.classList.add('flex');
+        });
+
+        btnCloseSettings.addEventListener('click', () => {
+            sounds.playClick();
+            settingsModal.classList.add('hidden');
+            settingsModal.classList.remove('flex');
+        });
+
+        sliderVolume.addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            sounds.bassVolumeMultiplier = val;
+            lblVolume.innerText = `${Math.round(val * 100)}%`;
+        });
+
+        selectIntensity.addEventListener('change', (e) => {
+            jumpscareIntensity = parseInt(e.target.value);
+            lblIntensity.innerText = jumpscareIntensity === 1 ? 'DÜŞÜK' : jumpscareIntensity === 2 ? 'ORTA' : 'MAKSİMUM';
+        });
+
+        btnLeftDoor.addEventListener('click', () => {
+            if (power <= 0 || camOpen) return;
+            leftDoor = !leftDoor;
+            txtLeftDoor.innerText = leftDoor ? "KAPALI" : "AÇIK";
+            btnLeftDoor.classList.toggle('bg-red-700', leftDoor);
+            sounds.playDoor();
+            updatePowerUsage();
+        });
+
+        btnRightDoor.addEventListener('click', () => {
+            if (power <= 0 || camOpen) return;
+            rightDoor = !rightDoor;
+            txtRightDoor.innerText = rightDoor ? "KAPALI" : "AÇIK";
+            btnRightDoor.classList.toggle('bg-red-700', rightDoor);
+            sounds.playDoor();
+            updatePowerUsage();
+        });
+
+        btnLeftLight.addEventListener('click', () => {
+            if (power <= 0 || camOpen) return;
+            leftLight = !leftLight;
+            txtLeftLight.innerText = leftLight ? "AÇIK" : "KAPALI";
+            btnLeftLight.classList.toggle('bg-amber-600', leftLight);
+            sounds.playLight();
+            updatePowerUsage();
+        });
+
+        btnRightLight.addEventListener('click', () => {
+            if (power <= 0 || camOpen) return;
+            rightLight = !rightLight;
+            txtRightLight.innerText = rightLight ? "AÇIK" : "KAPALI";
+            btnRightLight.classList.toggle('bg-amber-600', rightLight);
+            sounds.playLight();
+            updatePowerUsage();
+        });
+
+        btnToggleCam.addEventListener('click', () => {
+            if (power <= 0) return;
+            camOpen = !camOpen;
+            camOverlay.classList.toggle('hidden', !camOpen);
+            sounds.playStatic(0.15);
+            updatePowerUsage();
+        });
+
+        document.querySelectorAll('.cam-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const target = e.currentTarget;
+                const camId = parseInt(target.dataset.cam);
+                if (currentCam !== camId) {
+                    currentCam = camId;
+                    sounds.playStatic(0.1);
+                    camNameDisplay.innerText = camNames[camId];
+                    document.querySelectorAll('.cam-btn').forEach(b => {
+                        b.classList.remove('bg-blue-900/80', 'border-2', 'border-blue-400', 'text-white');
+                        b.classList.add('bg-neutral-800', 'border', 'border-neutral-600', 'text-neutral-300');
+                    });
+                    target.classList.remove('bg-neutral-800', 'border-neutral-600', 'text-neutral-300');
+                    target.classList.add('bg-blue-900/80', 'border-2', 'border-blue-400', 'text-white');
+                }
+            });
+        });
+
+        document.getElementById('btn-start-game').addEventListener('click', () => {
+            sounds.init();
+            sounds.playClick();
+            document.getElementById('start-screen').classList.add('hidden');
+            resetGame();
+            currentState = GAME_STATES.PLAYING;
+        });
+
+        document.getElementById('btn-restart-game').addEventListener('click', () => {
+            sounds.playClick();
+            document.getElementById('end-screen').classList.add('hidden');
+            resetGame();
+            currentState = GAME_STATES.PLAYING;
+        });
+
+        function updatePowerUsage() {
+            powerUsage = 1;
+            if (leftDoor) powerUsage++;
+            if (rightDoor) powerUsage++;
+            if (leftLight) powerUsage++;
+            if (rightLight) powerUsage++;
+            if (camOpen) powerUsage++;
+
+            const bars = usageBarsContainer.children;
+            for (let i = 0; i < 4; i++) {
+                if (i < powerUsage) {
+                    bars[i].className = "w-3 h-5 rounded-sm " + (powerUsage > 3 ? "bg-red-500" : powerUsage > 2 ? "bg-yellow-500" : "bg-green-500");
+                } else {
+                    bars[i].className = "w-3 h-5 bg-neutral-800 rounded-sm";
+                }
+            }
+        }
+
+        function resetGame() {
+            power = 100;
+            timeHour = 0;
+            secondTimer = 0;
+            leftDoor = false;
+            rightDoor = false;
+            leftLight = false;
+            rightLight = false;
+            camOpen = false;
+            currentCam = 1;
+
+            txtLeftDoor.innerText = "AÇIK";
+            txtRightDoor.innerText = "AÇIK";
+            txtLeftLight.innerText = "KAPALI";
+            txtRightLight.innerText = "KAPALI";
+            btnLeftDoor.classList.remove('bg-red-700');
+            btnRightDoor.classList.remove('bg-red-700');
+            btnLeftLight.classList.remove('bg-amber-600');
+            btnRightLight.classList.remove('bg-amber-600');
+            camOverlay.classList.add('hidden');
+
+            animatronics.beary = { name: 'Beary', location: 1, timer: 0, interval: 12, attackStage: 0 };
+            animatronics.bunny = { name: 'Bunny', location: 1, timer: 0, interval: 8, attackStage: 0 };
+            animatronics.fox = { name: 'Fox', location: 3, timer: 0, interval: 10, state: 0 };
+
+            updatePowerUsage();
+        }
+
+        function updateAI(dt) {
+            animatronics.beary.timer += dt;
+            if (animatronics.beary.timer >= animatronics.beary.interval) {
+                animatronics.beary.timer = 0;
+                moveBeary();
+            }
+
+            animatronics.bunny.timer += dt;
+            if (animatronics.bunny.timer >= animatronics.bunny.interval) {
+                animatronics.bunny.timer = 0;
+                moveBunny();
+            }
+
+            animatronics.fox.timer += dt;
+            if (animatronics.fox.timer >= animatronics.fox.interval) {
+                animatronics.fox.timer = 0;
+                updateFox();
+            }
+        }
+
+        function moveBeary() {
+            const loc = animatronics.beary.location;
+            if (loc === 1) animatronics.beary.location = 2;
+            else if (loc === 2) animatronics.beary.location = 4;
+            else if (loc === 4) {
+                if (leftDoor) {
+                    animatronics.beary.location = 2;
+                } else {
+                    triggerJumpscare('Beary');
+                }
+            }
+        }
+
+        function moveBunny() {
+            const loc = animatronics.bunny.location;
+            if (loc === 1) animatronics.bunny.location = 5;
+            else if (loc === 5) {
+                if (rightDoor) {
+                    animatronics.bunny.location = 1;
+                } else {
+                    triggerJumpscare('Bunny');
+                }
+            }
+        }
+
+        function updateFox() {
+            if (camOpen && currentCam === 3) return;
+
+            if (animatronics.fox.state < 2) {
+                animatronics.fox.state++;
+            } else if (animatronics.fox.state === 2) {
+                animatronics.fox.state = 3;
+                setTimeout(() => {
+                    if (leftDoor) {
+                        sounds.playDoor();
+                        animatronics.fox.state = 0;
+                        power = Math.max(0, power - 5);
+                    } else {
+                        triggerJumpscare('Fox');
+                    }
+                }, 2000);
+            }
+        }
+
+        function triggerJumpscare(animatronicName) {
+            if (currentState !== GAME_STATES.PLAYING) return;
+            currentState = GAME_STATES.GAMEOVER;
+            sounds.playJumpscare();
+
+            const gameContainer = document.getElementById('game-container');
+            if (jumpscareIntensity >= 2) {
+                gameContainer.classList.add('shake-intense');
+            }
+
+            const jsOverlay = document.getElementById('jumpscare-overlay');
+            const jsCanvas = document.getElementById('jumpscareCanvas');
+            const jsCtx = jsCanvas.getContext('2d');
+            jsOverlay.classList.remove('hidden');
+
+            jsCanvas.width = window.innerWidth;
+            jsCanvas.height = window.innerHeight;
+
+            let frame = 0;
+            const maxFrames = jumpscareIntensity === 1 ? 25 : 50;
+
+            function drawJumpscare() {
+                if (frame > maxFrames) {
+                    cancelAnimationFrame(jumpscareAnimId);
+                    gameContainer.classList.remove('shake-intense');
+                    jsOverlay.classList.add('hidden');
+                    showEndScreen(false, `${animatronicName} seni yakaladı!`);
+                    return;
+                }
+
+                if (jumpscareIntensity === 3) {
+                    jsCtx.fillStyle = frame % 2 === 0 ? (frame % 4 === 0 ? '#ff0000' : '#ffffff') : '#050000';
+                } else if (jumpscareIntensity === 2) {
+                    jsCtx.fillStyle = frame % 3 === 0 ? '#330000' : '#050000';
+                } else {
+                    jsCtx.fillStyle = '#0a0000';
+                }
+                jsCtx.fillRect(0, 0, jsCanvas.width, jsCanvas.height);
+
+                if (jumpscareIntensity >= 2) {
+                    jsCtx.fillStyle = 'rgba(0, 255, 255, 0.4)';
+                    jsCtx.fillRect(0, Math.random() * jsCanvas.height, jsCanvas.width, Math.random() * 25);
+                }
+
+                const shakeOffset = jumpscareIntensity === 3 ? 50 : jumpscareIntensity === 2 ? 20 : 0;
+                const cx = jsCanvas.width / 2 + (Math.random() * shakeOffset - shakeOffset / 2);
+                const cy = jsCanvas.height / 2 + (Math.random() * shakeOffset - shakeOffset / 2);
+                const scale = 1.3 + (frame / (jumpscareIntensity === 1 ? 15 : 7));
+
+                jsCtx.save();
+                jsCtx.translate(cx, cy);
+                jsCtx.scale(scale, scale);
+
+                jsCtx.fillStyle = animatronicName === 'Beary' ? '#3d2312' : animatronicName === 'Bunny' ? '#251b42' : '#5e150f';
+                jsCtx.beginPath();
+                jsCtx.arc(0, 0, 120, 0, Math.PI * 2);
+                jsCtx.fill();
+
+                jsCtx.fillStyle = '#000000';
+                jsCtx.beginPath();
+                jsCtx.arc(-45, -30, 35, 0, Math.PI * 2);
+                jsCtx.arc(45, -30, 35, 0, Math.PI * 2);
+                jsCtx.fill();
+
+                jsCtx.fillStyle = frame % 2 === 0 ? '#ffff00' : '#ff0000';
+                jsCtx.beginPath();
+                jsCtx.arc(-45 + (Math.random() * 12 - 6), -30 + (Math.random() * 12 - 6), 12, 0, Math.PI * 2);
+                jsCtx.arc(45 + (Math.random() * 12 - 6), -30 + (Math.random() * 12 - 6), 12, 0, Math.PI * 2);
+                jsCtx.fill();
+
+                jsCtx.fillStyle = '#050505';
+                jsCtx.beginPath();
+                jsCtx.ellipse(0, 50, 80, 50, 0, 0, Math.PI * 2);
+                jsCtx.fill();
+
+                jsCtx.fillStyle = '#eeeeee';
+                for (let i = -70; i <= 70; i += 14) {
+                    jsCtx.beginPath();
+                    jsCtx.moveTo(i, 10);
+                    jsCtx.lineTo(i + 7, 32);
+                    jsCtx.lineTo(i + 14, 10);
+                    jsCtx.fill();
+
+                    jsCtx.beginPath();
+                    jsCtx.moveTo(i, 90);
+                    jsCtx.lineTo(i + 7, 68);
+                    jsCtx.lineTo(i + 14, 90);
+                    jsCtx.fill();
+                }
+
+                jsCtx.restore();
+
+                frame++;
+                jumpscareAnimId = requestAnimationFrame(drawJumpscare);
+            }
+
+            drawJumpscare();
+        }
+
+        function showEndScreen(isWin, message) {
+            const endScreen = document.getElementById('end-screen');
+            const endTitle = document.getElementById('end-title');
+            const endDesc = document.getElementById('end-desc');
+
+            if (isWin) {
+                endTitle.innerText = "SAAT 06:00!";
+                endTitle.className = "text-6xl font-bold text-yellow-400 mb-4 tracking-widest animate-bounce";
+                endDesc.innerText = "Tebrikler! Gece vardiyasını başarıyla tamamladın.";
+                sounds.playWin();
+            } else {
+                endTitle.innerText = "OYNANDI";
+                endTitle.className = "text-6xl font-bold text-red-600 mb-4 tracking-widest";
+                endDesc.innerText = message;
+            }
+
+            endScreen.classList.remove('hidden');
+            endScreen.classList.add('flex');
+        }
+
+        function render() {
+            ctx.fillStyle = '#0a0a0a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (camOpen) {
+                renderCameraFeed();
+            } else {
+                renderOffice();
+            }
+        }
+
+        function renderOffice() {
+            ctx.fillStyle = '#141416';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#1f1f23';
+            ctx.fillRect(240, 60, 800, 520);
+
+            ctx.fillStyle = '#0f0f11';
+            ctx.fillRect(300, 480, 680, 180);
+            ctx.fillStyle = '#1a1a1c';
+            ctx.fillRect(540, 400, 200, 80);
+
+            ctx.fillStyle = leftLight ? '#775522' : '#040405';
+            ctx.fillRect(0, 0, 240, 720);
+
+            if (leftDoor) {
+                ctx.fillStyle = '#2d2d30';
+                ctx.fillRect(0, 0, 240, 720);
+                ctx.fillStyle = '#1a1a1c';
+                ctx.fillRect(15, 10, 210, 700);
+                ctx.fillStyle = '#ef4444';
+                ctx.fillRect(200, 360, 15, 15);
+            }
+
+            ctx.fillStyle = rightLight ? '#775522' : '#040405';
+            ctx.fillRect(1040, 0, 240, 720);
+
+            if (rightDoor) {
+                ctx.fillStyle = '#2d2d30';
+                ctx.fillRect(1040, 0, 240, 720);
+                ctx.fillStyle = '#1a1a1c';
+                ctx.fillRect(1055, 10, 210, 700);
+                ctx.fillStyle = '#ef4444';
+                ctx.fillRect(1065, 360, 15, 15);
+            }
+
+            if (leftLight && !leftDoor && animatronics.beary.location === 4) {
+                drawAnimatronicSilhouette(120, 380, '#5c3a21', 'Beary');
+            }
+            if (rightLight && !rightDoor && animatronics.bunny.location === 5) {
+                drawAnimatronicSilhouette(1160, 380, '#3b2f63', 'Bunny');
+            }
+
+            const fanAngle = (Date.now() / 40) % (Math.PI * 2);
+            ctx.save();
+            ctx.translate(640, 430);
+            ctx.rotate(fanAngle);
+            ctx.fillStyle = '#333';
+            ctx.fillRect(-25, -4, 50, 8);
+            ctx.fillRect(-4, -25, 8, 50);
+            ctx.restore();
+        }
+
+        function renderCameraFeed() {
+            ctx.fillStyle = '#0f141d';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 4;
+            ctx.strokeRect(50, 50, 700, 380);
+
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '24px VT323';
+            ctx.fillText(`KAMERA YAYINI: ${camNames[currentCam]}`, 70, 90);
+
+            if (currentCam === 1) {
+                ctx.fillStyle = '#1e293b';
+                ctx.fillRect(200, 200, 400, 150);
+
+                if (animatronics.beary.location === 1) drawAnimatronicSilhouette(300, 220, '#5c3a21', 'Beary');
+                if (animatronics.bunny.location === 1) drawAnimatronicSilhouette(500, 220, '#3b2f63', 'Bunny');
+            } 
+            else if (currentCam === 2) {
+                ctx.fillStyle = '#1e293b';
+                ctx.fillRect(150, 280, 500, 60);
+
+                if (animatronics.beary.location === 2) drawAnimatronicSilhouette(350, 230, '#5c3a21', 'Beary');
+            } 
+            else if (currentCam === 3) {
+                ctx.fillStyle = '#450a0a';
+                ctx.fillRect(250, 150, 300, 220);
+
+                const state = animatronics.fox.state;
+                if (state === 0) {
+                    ctx.fillStyle = '#f87171';
+                    ctx.fillText("Perde kapalı...", 320, 260);
+                } else if (state === 1) {
+                    drawAnimatronicSilhouette(370, 230, '#8b261d', 'Fox (Dikkat)');
+                } else if (state >= 2) {
+                    ctx.fillStyle = '#ef4444';
+                    ctx.fillText("PERDE BOŞ! KOŞUYOR!", 300, 260);
+                }
+            } 
+            else if (currentCam === 4) {
+                if (animatronics.beary.location === 4) drawAnimatronicSilhouette(400, 250, '#5c3a21', 'Beary');
+                if (animatronics.fox.state === 3) drawAnimatronicSilhouette(250, 250, '#8b261d', 'Fox (KOŞUYOR!)');
+            } 
+            else if (currentCam === 5) {
+                if (animatronics.bunny.location === 5) drawAnimatronicSilhouette(400, 250, '#3b2f63', 'Bunny');
+            }
+            else if (currentCam === 6) {
+                ctx.fillStyle = '#000';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#f59e0b';
+                ctx.font = '28px VT323';
+                ctx.textAlign = 'center';
+                ctx.fillText("[ KAMERA SİNYALİ YOK - SADECE SES ]", canvas.width / 2, canvas.height / 2);
+                ctx.font = '20px VT323';
+                ctx.fillStyle = '#9ca3af';
+                ctx.fillText("*Mutfak sesleri duyuluyor*", canvas.width / 2, canvas.height / 2 + 40);
+                ctx.textAlign = 'left';
+            }
+
+            ctx.fillStyle = `rgba(255, 255, 255, ${Math.random() * 0.12 + 0.05})`;
+            for (let i = 0; i < canvas.height; i += 4) {
+                ctx.fillRect(0, i, canvas.width, Math.random() * 2);
+            }
+        }
+
+        function drawAnimatronicSilhouette(x, y, color, name) {
+            ctx.save();
+            ctx.translate(x, y);
+
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(0, -20, 30, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillRect(-25, 0, 50, 60);
+
+            ctx.fillStyle = '#ff0000';
+            ctx.beginPath();
+            ctx.arc(-10, -25, 5, 0, Math.PI * 2);
+            ctx.arc(10, -25, 5, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '16px VT323';
+            ctx.textAlign = 'center';
+            ctx.fillText(name, 0, 75);
+
+            ctx.restore();
+        }
+
+        function gameLoop(timestamp) {
+            if (!lastTime) lastTime = timestamp;
+            const dt = (timestamp - lastTime) / 1000;
+            lastTime = timestamp;
+
+            if (currentState === GAME_STATES.PLAYING) {
+                secondTimer += dt;
+                if (secondTimer >= SECONDS_PER_HOUR) {
+                    secondTimer = 0;
+                    timeHour++;
+                    clockText.innerText = timeHour === 0 ? "12" : timeHour;
+                    if (timeHour >= 6) {
+                        currentState = GAME_STATES.WIN;
+                        showEndScreen(true, "");
+                    }
+                }
+
+                const powerDrainRate = 0.4 * powerUsage;
+                power -= powerDrainRate * dt;
+                powerText.innerText = Math.max(0, Math.ceil(power));
+
+                if (power <= 0) {
+                    power = 0;
+                    leftDoor = false;
+                    rightDoor = false;
+                    leftLight = false;
+                    rightLight = false;
+                    camOpen = false;
+                    camOverlay.classList.add('hidden');
+                    updatePowerUsage();
+
+                    setTimeout(() => {
+                        if (currentState === GAME_STATES.PLAYING) {
+                            triggerJumpscare('Beary');
+                        }
+                    }, 3000 + Math.random() * 3000);
+                }
+
+                updateAI(dt);
+                render();
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        requestAnimationFrame(gameLoop);
+    </script>
+</body>
+</html>
